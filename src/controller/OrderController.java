@@ -1,14 +1,5 @@
 package controller;
-
 import service.OrderService;
-
-/**
- * Controller for order actions.
- */
-public class OrderController {
-    private final OrderService orderService = new OrderService();
-
-    public boolean createOrder(int productId, int buyerId, int sellerId, double price) {
-        return orderService.purchaseProduct(productId, buyerId, sellerId, price);
-    }
-}
+/** Controller for orders. */
+public class OrderController { private final OrderService s=new OrderService();
+    /** @param buyerId buyer @param productId product @return message */ public String placeOrder(int buyerId,int productId){return s.placeOrder(buyerId,productId);} }
