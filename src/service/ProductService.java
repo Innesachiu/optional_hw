@@ -1,41 +1,13 @@
 package service;
-
-import dao.ProductDAO;
-import dao.SearchLogDAO;
-import model.Product;
-
-import java.util.List;
-
-/**
- * Business service for product workflows.
- */
-public class ProductService {
-    private final ProductDAO productDAO = new ProductDAO();
-    private final SearchLogDAO searchLogDAO = new SearchLogDAO();
-
-    public boolean addProduct(int sellerId, String title, String description, double price) {
-        Product product = new Product(0, sellerId, title, description, price, "ACTIVE");
-        return productDAO.addProduct(product);
-    }
-
-    public List<Product> browseActiveProducts() {
-        return productDAO.getActiveProducts();
-    }
-
-    public List<Product> searchProducts(Integer userId, String keyword) {
-        searchLogDAO.logSearch(userId, keyword);
-        return productDAO.searchProducts(keyword);
-    }
-
-    public List<String> popularKeywords() {
-        return searchLogDAO.getPopularKeywordsLast7Days();
-    }
-
-    public Product getProductDetail(int id) {
-        return productDAO.getProductById(id);
-    }
-
-    public boolean markAsSold(int productId) {
-        return productDAO.markAsSold(productId);
-    }
+import dao.CategoryDAO;import dao.ProductDAO;import model.Category;import model.Product;import java.util.*;
+/** Service for products. */
+public class ProductService { private final ProductDAO dao=new ProductDAO(); private final CategoryDAO categoryDAO=new CategoryDAO();
+    /** @return active list */ public List<Product> getActiveProducts(){return dao.findActiveProducts();}
+    /** @param userId user id @param keyword keyword @param searchService search service @return result */
+    public List<Product> searchProducts(Integer userId,String keyword,SearchService searchService){if(keyword==null||keyword.trim().isEmpty())return new ArrayList<>();searchService.logSearch(userId,keyword.trim());List<Product> list=dao.searchActiveProducts(keyword.trim());for(Product p:list)dao.increaseSearchHit(p.getProductId());return list;}
+    /** @param sellerId seller @param categoryId category @param title title @param price price @param description desc @return success */
+    public boolean addProduct(int sellerId,int categoryId,String title,int price,String description){if(title==null||title.trim().isEmpty()||price<=0)return false;Product p=new Product();p.setSellerId(sellerId);p.setCategoryId(categoryId);p.setTitle(title.trim());p.setPrice(price);p.setDescription(description);return dao.insertProduct(p);} 
+    /** @param productId id @return product */ public Product getProductDetail(int productId){return dao.findById(productId);} 
+    /** @param productId id @return success */ public boolean markSold(int productId){return dao.markSold(productId);} 
+    /** @return categories */ public List<Category> getCategories(){return categoryDAO.findAll();}
 }

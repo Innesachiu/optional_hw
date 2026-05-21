@@ -1,12 +1,6 @@
-import view.MainFrame;
-
-import javax.swing.SwingUtilities;
-
-/**
- * Application entry point.
- */
+import javax.swing.SwingUtilities;import view.LoginFrame;
+/** Application entry point. */
 public class Main {
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
-    }
+    /** Starts application. @param args cli args */
+    public static void main(String[] args){SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));}
 }

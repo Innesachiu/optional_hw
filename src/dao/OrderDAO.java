@@ -1,27 +1,7 @@
 package dao;
-
-import model.OrderRecord;
-import util.DBConnection;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-/**
- * DAO for order operations.
- */
+import model.Order;import util.DBConnection;import java.sql.*;
+/** DAO for orders. */
 public class OrderDAO {
-    public boolean createOrder(OrderRecord order) {
-        String sql = "INSERT INTO orders(product_id, buyer_id, seller_id, order_price) VALUES(?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, order.getProductId());
-            ps.setInt(2, order.getBuyerId());
-            ps.setInt(3, order.getSellerId());
-            ps.setDouble(4, order.getOrderPrice());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
+    /** @param order order @return success */
+    public boolean createOrder(Order order){String sql="INSERT INTO orders(buyer_id,seller_id,product_id,amount,status) VALUES(?,?,?,?,?)";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql)){p.setInt(1,order.getBuyerId());p.setInt(2,order.getSellerId());p.setInt(3,order.getProductId());p.setInt(4,order.getAmount());p.setString(5,order.getStatus());return p.executeUpdate()>0;}catch(SQLException e){return false;}}
 }
