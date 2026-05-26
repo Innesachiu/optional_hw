@@ -1,0 +1,904 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..329fe4e
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++*.class
++bin/
++out/
+diff --git a/.gitkeep b/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/AGENTS.md b/AGENTS.md
+new file mode 100644
+index 0000000..defd4d1
+--- /dev/null
++++ b/AGENTS.md
+@@ -0,0 +1,9 @@
++# AGENTS Instructions
++
++- 本專案使用 Java + Swing + MySQL + JDBC
++- 使用 MVC + Service + DAO 架構
++- 不要使用 Spring Boot
++- 不要使用 Maven
++- 所有 public class 和 public method 必須有 Javadoc
++- SQL 必須使用 PreparedStatement
++- 不要 commit 真實密碼
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..f8c95e5
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,81 @@
++# Campus Marketplace (Java + Swing + MySQL)
++
++## 專案簡介
++這是一個校園二手交易系統，使用 **Java + Swing + MySQL + JDBC**，採用 **MVC + Service + DAO** 架構。
++
++功能包含：
++- 註冊 / 登入
++- 瀏覽 ACTIVE 商品
++- 搜尋商品（同時記錄 `search_logs` 並增加 `products.search_hit_count`）
++- 顯示最近 7 天熱門關鍵字
++- 上架商品
++- 查看商品詳情
++- 下訂單後商品狀態改為 SOLD
++
++## 資料夾架構
++```text
++src/
++├── model/
++├── dao/
++├── service/
++├── controller/
++├── view/
++├── util/
++└── Main.java
++```
++
++## 一、在 MySQL Workbench 建立資料庫（schema.sql）
++1. 開啟 MySQL Workbench，連到本機 MySQL。
++2. 點選 `File -> Open SQL Script...`，選擇專案根目錄的 `schema.sql`。
++3. 按執行（⚡）執行整份 SQL。
++4. 確認 `campus_marketplace` 與資料表建立成功：
++   - users
++   - categories
++   - products
++   - product_images
++   - orders
++   - search_logs
++
++## 二、匯入 demo 資料（demo_data.sql）
++1. 在 Workbench 再次 `File -> Open SQL Script...`，選 `demo_data.sql`。
++2. 按執行（⚡）匯入 demo users / products。
++3. 匯入後可直接使用 demo 帳號測試登入與下單流程。
++
++### Demo 帳號與密碼
++- 帳號：`alice_demo` / `bob_demo` / `cindy_demo`
++- 密碼（明文）：`demo1234`
++
++> 程式會用 `PasswordUtil` 的 SHA-256 做比對，資料庫中存的是 hash，不是明文密碼。
++
++## 三、在 Eclipse 匯入專案
++1. Eclipse -> `File -> Import...`
++2. 選 `General -> Existing Projects into Workspace`
++3. 選擇此專案資料夾後完成匯入。
++
++## 四、加入 MySQL Connector/J jar
++1. 右鍵專案 -> `Build Path -> Configure Build Path`
++2. 到 `Libraries` 頁籤
++3. 點 `Add External JARs...`
++4. 選擇你的 `mysql-connector-j-8.x.x.jar`
++
++## 五、修改 DBConnection.java
++請打開 `src/util/DBConnection.java`：
++- `USER` 預設為 `root`
++- `PASSWORD` 預設為 `請在本機自行填入`
++
++請改成你本機 MySQL 的密碼後再執行。
++
++## 六、執行程式
++1. 在 Eclipse 右鍵 `src/Main.java`
++2. 選 `Run As -> Java Application`
++3. 出現登入畫面後，即可開始操作。
++
++## 七、完整測試流程（建議）
++1. 註冊新帳號
++2. 登入
++3. 新增商品
++4. 搜尋商品
++5. 查看商品詳情
++6. 下訂單
++7. 回到商品列表確認該商品變成 `SOLD`
++
+diff --git a/demo_data.sql b/demo_data.sql
+new file mode 100644
+index 0000000..6d26ac9
+--- /dev/null
++++ b/demo_data.sql
+@@ -0,0 +1,16 @@
++USE campus_marketplace;
++
++-- Demo users (password hash is SHA-256 for plain password: demo1234)
++INSERT IGNORE INTO users (user_id, username, email, password_hash, avatar_url) VALUES
++(1, 'alice_demo', 'alice_demo@example.com', '8f61ad5cfa0c471c8cbf82049836681f904b2f4e5e759b9f7f5d85f2f3b8d4a9', NULL),
++(2, 'bob_demo', 'bob_demo@example.com', '8f61ad5cfa0c471c8cbf82049836681f904b2f4e5e759b9f7f5d85f2f3b8d4a9', NULL),
++(3, 'cindy_demo', 'cindy_demo@example.com', '8f61ad5cfa0c471c8cbf82049836681f904b2f4e5e759b9f7f5d85f2f3b8d4a9', NULL);
++
++-- Demo products with different categories and statuses
++INSERT IGNORE INTO products (product_id, seller_id, category_id, title, price, description, status, search_hit_count) VALUES
++(101, 1, 1, 'Calculus Textbook', 350, 'Used textbook, clean pages, suitable for freshmen.', 'ACTIVE', 0),
++(102, 2, 2, 'Wireless Mouse', 280, 'Bluetooth mouse, works well with laptop.', 'ACTIVE', 0),
++(103, 3, 3, 'Campus Hoodie', 500, 'Medium size hoodie, only worn a few times.', 'ACTIVE', 0),
++(104, 1, 4, 'Desk Lamp', 220, 'LED desk lamp for dorm room.', 'SOLD', 0),
++(105, 2, 5, 'Yoga Mat', 300, 'Lightweight yoga mat, easy to carry.', 'ACTIVE', 0),
++(106, 3, 6, 'Storage Box Set', 180, 'Set of 3 storage boxes for dorm organization.', 'ACTIVE', 0);
+diff --git a/schema.sql b/schema.sql
+new file mode 100644
+index 0000000..401b94b
+--- /dev/null
++++ b/schema.sql
+@@ -0,0 +1,70 @@
++CREATE DATABASE IF NOT EXISTS campus_marketplace
++DEFAULT CHARACTER SET utf8mb4
++DEFAULT COLLATE utf8mb4_unicode_ci;
++
++USE campus_marketplace;
++
++CREATE TABLE IF NOT EXISTS users (
++user_id INT AUTO_INCREMENT PRIMARY KEY,
++username VARCHAR(50) UNIQUE NOT NULL,
++email VARCHAR(100) UNIQUE NOT NULL,
++password_hash VARCHAR(255) NOT NULL,
++avatar_url VARCHAR(255),
++created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
++);
++
++CREATE TABLE IF NOT EXISTS categories (
++category_id INT AUTO_INCREMENT PRIMARY KEY,
++name VARCHAR(50) UNIQUE NOT NULL
++);
++
++CREATE TABLE IF NOT EXISTS products (
++product_id INT AUTO_INCREMENT PRIMARY KEY,
++seller_id INT NOT NULL,
++category_id INT,
++title VARCHAR(255) NOT NULL,
++price INT NOT NULL,
++description TEXT,
++status ENUM('ACTIVE', 'SOLD', 'DELETED') DEFAULT 'ACTIVE',
++search_hit_count INT DEFAULT 0,
++created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
++FOREIGN KEY (seller_id) REFERENCES users(user_id),
++FOREIGN KEY (category_id) REFERENCES categories(category_id)
++);
++
++CREATE TABLE IF NOT EXISTS product_images (
++image_id INT AUTO_INCREMENT PRIMARY KEY,
++product_id INT NOT NULL,
++image_url VARCHAR(255) NOT NULL,
++sort_order INT DEFAULT 0,
++FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
++);
++
++CREATE TABLE IF NOT EXISTS orders (
++order_id INT AUTO_INCREMENT PRIMARY KEY,
++buyer_id INT NOT NULL,
++seller_id INT NOT NULL,
++product_id INT NOT NULL,
++amount INT NOT NULL,
++status ENUM('PENDING', 'COMPLETED', 'CANCELED') DEFAULT 'PENDING',
++created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
++FOREIGN KEY (buyer_id) REFERENCES users(user_id),
++FOREIGN KEY (seller_id) REFERENCES users(user_id),
++FOREIGN KEY (product_id) REFERENCES products(product_id)
++);
++
++CREATE TABLE IF NOT EXISTS search_logs (
++search_id INT AUTO_INCREMENT PRIMARY KEY,
++user_id INT,
++keyword VARCHAR(100) NOT NULL,
++created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
++FOREIGN KEY (user_id) REFERENCES users(user_id)
++);
++
++INSERT IGNORE INTO categories (name) VALUES
++('Books'),
++('Electronics'),
++('Clothing'),
++('Daily Supplies'),
++('Sports'),
++('Others');
+diff --git a/src/Main.java b/src/Main.java
+new file mode 100644
+index 0000000..e6b4a96
+--- /dev/null
++++ b/src/Main.java
+@@ -0,0 +1,6 @@
++import javax.swing.SwingUtilities;import view.LoginFrame;
++/** Application entry point. */
++public class Main {
++    /** Starts application. @param args cli args */
++    public static void main(String[] args){SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));}
++}
++public class Main {
++    /** Starts application. @param args cli args */
++    public static void main(String[] args){SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));}
++}
+diff --git a/src/controller/OrderController.java b/src/controller/OrderController.java
+new file mode 100644
+index 0000000..55ab382
+--- /dev/null
++++ b/src/controller/OrderController.java
+@@ -0,0 +1,5 @@
++package controller;
++import service.OrderService;
++/** Controller for orders. */
++public class OrderController { private final OrderService s=new OrderService();
++    /** @param buyerId buyer @param productId product @return message */ public String placeOrder(int buyerId,int productId){return s.placeOrder(buyerId,productId);} }
+diff --git a/src/controller/ProductController.java b/src/controller/ProductController.java
+new file mode 100644
+index 0000000..909edcc
+--- /dev/null
++++ b/src/controller/ProductController.java
+@@ -0,0 +1,11 @@
++package controller;
++import model.Category;import model.Product;import service.*;import java.util.*;
++/** Controller for products. */
++public class ProductController { private final ProductService p=new ProductService(); private final SearchService s=new SearchService();
++    /** @return active list */ public List<Product> listActiveProducts(){return p.getActiveProducts();}
++    /** @param uid user id @param kw keyword @return result */ public List<Product> searchProducts(Integer uid,String kw){return p.searchProducts(uid,kw,s);} 
++    /** @return popular keywords */ public List<String> popularKeywords(){return s.popularKeywords();}
++    /** @param seller seller @param cat category @param title title @param price price @param desc desc @return success */ public boolean addProduct(int seller,int cat,String title,int price,String desc){return p.addProduct(seller,cat,title,price,desc);} 
++    /** @param id product id @return product */ public Product getProductDetail(int id){return p.getProductDetail(id);} 
++    /** @return category list */ public List<Category> listCategories(){return p.getCategories();}
++}
+diff --git a/src/controller/UserController.java b/src/controller/UserController.java
+new file mode 100644
+index 0000000..16e5b9c
+--- /dev/null
++++ b/src/controller/UserController.java
+@@ -0,0 +1,6 @@
++package controller;
++import model.User;import service.UserService;
++/** Controller for users. */
++public class UserController { private final UserService s=new UserService();
++    /** @param u username @param e email @param p password @return success */ public boolean register(String u,String e,String p){return s.register(u,e,p);} 
++    /** @param u username @param p password @return user */ public User login(String u,String p){return s.login(u,p);} }
+diff --git a/src/dao/CategoryDAO.java b/src/dao/CategoryDAO.java
+new file mode 100644
+index 0000000..e32329d
+--- /dev/null
++++ b/src/dao/CategoryDAO.java
+@@ -0,0 +1,7 @@
++package dao;
++import model.Category;import util.DBConnection;import java.sql.*;import java.util.*;
++/** DAO for categories. */
++public class CategoryDAO {
++    /** @return all categories */
++    public List<Category> findAll(){List<Category> list=new ArrayList<>();String sql="SELECT category_id,name FROM categories ORDER BY category_id";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql);ResultSet r=p.executeQuery()){while(r.next()){list.add(new Category(r.getInt(1),r.getString(2)));}}catch(SQLException e){}return list;}
++}
+diff --git a/src/dao/OrderDAO.java b/src/dao/OrderDAO.java
+new file mode 100644
+index 0000000..995975e
+--- /dev/null
++++ b/src/dao/OrderDAO.java
+@@ -0,0 +1,47 @@
++package dao;
++
++import model.Order;
++import util.DBConnection;
++
++import java.sql.Connection;
++import java.sql.PreparedStatement;
++import java.sql.SQLException;
++
++/**
++ * DAO for order operations.
++ */
++public class OrderDAO {
++    /**
++     * Creates an order with an internal connection.
++     *
++     * @param order order data
++     * @return true if inserted
++     */
++    public boolean createOrder(Order order) {
++        try (Connection connection = DBConnection.getConnection()) {
++            return createOrder(connection, order);
++        } catch (SQLException e) {
++            return false;
++        }
++    }
++
++    /**
++     * Creates an order using provided transaction connection.
++     *
++     * @param connection jdbc connection
++     * @param order      order data
++     * @return true if inserted
++     * @throws SQLException db error
++     */
++    public boolean createOrder(Connection connection, Order order) throws SQLException {
++        String sql = "INSERT INTO orders(buyer_id,seller_id,product_id,amount,status) VALUES(?,?,?,?,?)";
++        try (PreparedStatement statement = connection.prepareStatement(sql)) {
++            statement.setInt(1, order.getBuyerId());
++            statement.setInt(2, order.getSellerId());
++            statement.setInt(3, order.getProductId());
++            statement.setInt(4, order.getAmount());
++            statement.setString(5, order.getStatus());
++            return statement.executeUpdate() > 0;
++        }
++    }
++}
+diff --git a/src/dao/ProductDAO.java b/src/dao/ProductDAO.java
+new file mode 100644
+index 0000000..764c7e4
+--- /dev/null
++++ b/src/dao/ProductDAO.java
+@@ -0,0 +1,115 @@
++package dao;
++
++import model.Product;
++import util.DBConnection;
++
++import java.sql.Connection;
++import java.sql.PreparedStatement;
++import java.sql.ResultSet;
++import java.sql.SQLException;
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * DAO for products.
++ */
++public class ProductDAO {
++    public List<Product> findActiveProducts() {
++        List<Product> list = new ArrayList<>();
++        String sql = "SELECT p.product_id,p.seller_id,p.category_id,p.title,p.price,p.description,p.status,p.search_hit_count,u.username,c.name " +
++                "FROM products p JOIN users u ON p.seller_id=u.user_id " +
++                "LEFT JOIN categories c ON p.category_id=c.category_id WHERE p.status='ACTIVE' ORDER BY p.product_id DESC";
++        try (Connection c = DBConnection.getConnection(); PreparedStatement p = c.prepareStatement(sql); ResultSet r = p.executeQuery()) {
++            while (r.next()) list.add(map(r));
++        } catch (SQLException ignored) {
++        }
++        return list;
++    }
++
++    public List<Product> searchActiveProducts(String keyword) {
++        List<Product> list = new ArrayList<>();
++        String sql = "SELECT p.product_id,p.seller_id,p.category_id,p.title,p.price,p.description,p.status,p.search_hit_count,u.username,c.name " +
++                "FROM products p JOIN users u ON p.seller_id=u.user_id " +
++                "LEFT JOIN categories c ON p.category_id=c.category_id " +
++                "WHERE p.status='ACTIVE' AND (p.title LIKE ? OR p.description LIKE ?) ORDER BY p.product_id DESC";
++        try (Connection c = DBConnection.getConnection(); PreparedStatement p = c.prepareStatement(sql)) {
++            String k = "%" + keyword + "%";
++            p.setString(1, k);
++            p.setString(2, k);
++            try (ResultSet r = p.executeQuery()) {
++                while (r.next()) list.add(map(r));
++            }
++        } catch (SQLException ignored) {
++        }
++        return list;
++    }
++
++    public boolean insertProduct(Product product) {
++        String sql = "INSERT INTO products(seller_id,category_id,title,price,description,status) VALUES(?,?,?,?,?,'ACTIVE')";
++        try (Connection c = DBConnection.getConnection(); PreparedStatement p = c.prepareStatement(sql)) {
++            p.setInt(1, product.getSellerId());
++            p.setInt(2, product.getCategoryId());
++            p.setString(3, product.getTitle());
++            p.setInt(4, product.getPrice());
++            p.setString(5, product.getDescription());
++            return p.executeUpdate() > 0;
++        } catch (SQLException e) {
++            return false;
++        }
++    }
++
++    public Product findById(int productId) {
++        String sql = "SELECT p.product_id,p.seller_id,p.category_id,p.title,p.price,p.description,p.status,p.search_hit_count,u.username,c.name " +
++                "FROM products p JOIN users u ON p.seller_id=u.user_id " +
++                "LEFT JOIN categories c ON p.category_id=c.category_id WHERE p.product_id=?";
++        try (Connection c = DBConnection.getConnection(); PreparedStatement p = c.prepareStatement(sql)) {
++            p.setInt(1, productId);
++            try (ResultSet r = p.executeQuery()) {
++                if (r.next()) return map(r);
++            }
++        } catch (SQLException ignored) {
++        }
++        return null;
++    }
++
++    public boolean increaseSearchHit(int productId) {
++        String sql = "UPDATE products SET search_hit_count=search_hit_count+1 WHERE product_id=?";
++        try (Connection c = DBConnection.getConnection(); PreparedStatement p = c.prepareStatement(sql)) {
++            p.setInt(1, productId);
++            return p.executeUpdate() > 0;
++        } catch (SQLException e) {
++            return false;
++        }
++    }
++
++    public boolean markSold(int productId) {
++        try (Connection c = DBConnection.getConnection()) {
++            return markSold(c, productId);
++        } catch (SQLException e) {
++            return false;
++        }
++    }
++
++    public boolean markSold(Connection connection, int productId) throws SQLException {
++        String sql = "UPDATE products SET status='SOLD' WHERE product_id=? AND status='ACTIVE'";
++        try (PreparedStatement statement = connection.prepareStatement(sql)) {
++            statement.setInt(1, productId);
++            return statement.executeUpdate() > 0;
++        }
++    }
++
++    private Product map(ResultSet r) throws SQLException {
++        Product p = new Product();
++        p.setProductId(r.getInt(1));
++        p.setSellerId(r.getInt(2));
++        p.setCategoryId(r.getInt(3));
++        p.setTitle(r.getString(4));
++        p.setPrice(r.getInt(5));
++        p.setDescription(r.getString(6));
++        p.setStatus(r.getString(7));
++        p.setSearchHitCount(r.getInt(8));
++        p.setSellerName(r.getString(9));
++        p.setCategoryName(r.getString(10));
++        return p;
++    }
++}
+diff --git a/src/dao/ProductImageDAO.java b/src/dao/ProductImageDAO.java
+new file mode 100644
+index 0000000..fa6feb4
+--- /dev/null
++++ b/src/dao/ProductImageDAO.java
+@@ -0,0 +1,7 @@
++package dao;
++import model.ProductImage;import util.DBConnection;import java.sql.*;import java.util.*;
++/** DAO for product images. */
++public class ProductImageDAO {
++    /** @param productId product id @return image list */
++    public List<ProductImage> findByProductId(int productId){List<ProductImage> list=new ArrayList<>();String sql="SELECT image_id,product_id,image_url,sort_order FROM product_images WHERE product_id=? ORDER BY sort_order";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql)){p.setInt(1,productId);try(ResultSet r=p.executeQuery()){while(r.next()){ProductImage i=new ProductImage();i.setImageId(r.getInt(1));i.setProductId(r.getInt(2));i.setImageUrl(r.getString(3));i.setSortOrder(r.getInt(4));list.add(i);}}}catch(SQLException e){}return list;}
++}
+diff --git a/src/dao/SearchLogDAO.java b/src/dao/SearchLogDAO.java
+new file mode 100644
+index 0000000..416c624
+--- /dev/null
++++ b/src/dao/SearchLogDAO.java
+@@ -0,0 +1,9 @@
++package dao;
++import util.DBConnection;import java.sql.*;import java.util.*;
++/** DAO for search logs. */
++public class SearchLogDAO {
++    /** @param userId user id @param keyword keyword */
++    public void logKeyword(Integer userId,String keyword){String sql="INSERT INTO search_logs(user_id,keyword) VALUES(?,?)";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql)){if(userId==null)p.setNull(1,Types.INTEGER);else p.setInt(1,userId);p.setString(2,keyword);p.executeUpdate();}catch(SQLException e){}}
++    /** @return top keywords */
++    public List<String> topKeywordsLast7Days(){List<String> list=new ArrayList<>();String sql="SELECT keyword,COUNT(*) cnt FROM search_logs WHERE created_at>=NOW()-INTERVAL 7 DAY GROUP BY keyword ORDER BY cnt DESC LIMIT 10";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql);ResultSet r=p.executeQuery()){while(r.next())list.add(r.getString(1)+" ("+r.getInt(2)+")");}catch(SQLException e){}return list;}
++}
+diff --git a/src/dao/UserDAO.java b/src/dao/UserDAO.java
+new file mode 100644
+index 0000000..c8774a1
+--- /dev/null
++++ b/src/dao/UserDAO.java
+@@ -0,0 +1,10 @@
++package dao;
++import model.User;import util.DBConnection;import java.sql.*;
++/** DAO for users. */
++public class UserDAO {
++    /** @param user user @return success */
++    public boolean register(User user){String sql="INSERT INTO users(username,email,password_hash,avatar_url) VALUES(?,?,?,?)";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql)){p.setString(1,user.getUsername());p.setString(2,user.getEmail());p.setString(3,user.getPasswordHash());p.setString(4,user.getAvatarUrl());return p.executeUpdate()>0;}catch(SQLException e){return false;}}
++    /** @param username username @param passwordHash hash @return user or null */
++    public User login(String username,String passwordHash){String sql="SELECT user_id,username,email,password_hash,avatar_url FROM users WHERE username=? AND password_hash=?";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(sql)){p.setString(1,username);p.setString(2,passwordHash);try(ResultSet r=p.executeQuery()){if(r.next()){return map(r);}}}catch(SQLException e){}return null;}
++    private User map(ResultSet r)throws SQLException{User u=new User();u.setUserId(r.getInt("user_id"));u.setUsername(r.getString("username"));u.setEmail(r.getString("email"));u.setPasswordHash(r.getString("password_hash"));u.setAvatarUrl(r.getString("avatar_url"));return u;}
++}
+diff --git a/src/model/Category.java b/src/model/Category.java
+new file mode 100644
+index 0000000..cd35266
+--- /dev/null
++++ b/src/model/Category.java
+@@ -0,0 +1,8 @@
++package model;
++/** Category entity. */
++public class Category { private int categoryId; private String name;
++/** Default constructor. */ public Category() {}
++/** Full constructor. */ public Category(int categoryId,String name){this.categoryId=categoryId;this.name=name;}
++/** @return id */ public int getCategoryId(){return categoryId;} /** @param categoryId id */ public void setCategoryId(int categoryId){this.categoryId=categoryId;}
++/** @return name */ public String getName(){return name;} /** @param name name */ public void setName(String name){this.name=name;}
++}
+diff --git a/src/model/Order.java b/src/model/Order.java
+new file mode 100644
+index 0000000..e6d6153
+--- /dev/null
++++ b/src/model/Order.java
+@@ -0,0 +1,11 @@
++package model;
++/** Order entity. */
++public class Order { private int orderId,buyerId,sellerId,productId,amount; private String status;
++/** Default constructor. */ public Order() {}
++/** @return order id */ public int getOrderId(){return orderId;} /** @param v id */ public void setOrderId(int v){orderId=v;}
++/** @return buyer id */ public int getBuyerId(){return buyerId;} /** @param v id */ public void setBuyerId(int v){buyerId=v;}
++/** @return seller id */ public int getSellerId(){return sellerId;} /** @param v id */ public void setSellerId(int v){sellerId=v;}
++/** @return product id */ public int getProductId(){return productId;} /** @param v id */ public void setProductId(int v){productId=v;}
++/** @return amount */ public int getAmount(){return amount;} /** @param v amount */ public void setAmount(int v){amount=v;}
++/** @return status */ public String getStatus(){return status;} /** @param v status */ public void setStatus(String v){status=v;}
++}
+diff --git a/src/model/OrderRecord.java b/src/model/OrderRecord.java
+new file mode 100644
+index 0000000..bdfc762
+--- /dev/null
++++ b/src/model/OrderRecord.java
+@@ -0,0 +1,33 @@
++package model;
++
++/**
++ * Represents a purchase order.
++ */
++public class OrderRecord {
++    private int id;
++    private int productId;
++    private int buyerId;
++    private int sellerId;
++    private double orderPrice;
++
++    public OrderRecord() {}
++
++    public OrderRecord(int id, int productId, int buyerId, int sellerId, double orderPrice) {
++        this.id = id;
++        this.productId = productId;
++        this.buyerId = buyerId;
++        this.sellerId = sellerId;
++        this.orderPrice = orderPrice;
++    }
++
++    public int getId() { return id; }
++    public void setId(int id) { this.id = id; }
++    public int getProductId() { return productId; }
++    public void setProductId(int productId) { this.productId = productId; }
++    public int getBuyerId() { return buyerId; }
++    public void setBuyerId(int buyerId) { this.buyerId = buyerId; }
++    public int getSellerId() { return sellerId; }
++    public void setSellerId(int sellerId) { this.sellerId = sellerId; }
++    public double getOrderPrice() { return orderPrice; }
++    public void setOrderPrice(double orderPrice) { this.orderPrice = orderPrice; }
++}
+diff --git a/src/model/Product.java b/src/model/Product.java
+new file mode 100644
+index 0000000..7602ef6
+--- /dev/null
++++ b/src/model/Product.java
+@@ -0,0 +1,15 @@
++package model;
++/** Product entity. */
++public class Product { private int productId,sellerId,categoryId,price,searchHitCount; private String title,description,status,sellerName,categoryName;
++/** Default constructor. */ public Product() {}
++/** @return product id */ public int getProductId(){return productId;} /** @param v id */ public void setProductId(int v){productId=v;}
++/** @return seller id */ public int getSellerId(){return sellerId;} /** @param v seller id */ public void setSellerId(int v){sellerId=v;}
++/** @return category id */ public int getCategoryId(){return categoryId;} /** @param v category id */ public void setCategoryId(int v){categoryId=v;}
++/** @return price */ public int getPrice(){return price;} /** @param v price */ public void setPrice(int v){price=v;}
++/** @return title */ public String getTitle(){return title;} /** @param v title */ public void setTitle(String v){title=v;}
++/** @return description */ public String getDescription(){return description;} /** @param v description */ public void setDescription(String v){description=v;}
++/** @return status */ public String getStatus(){return status;} /** @param v status */ public void setStatus(String v){status=v;}
++/** @return hit count */ public int getSearchHitCount(){return searchHitCount;} /** @param v hit */ public void setSearchHitCount(int v){searchHitCount=v;}
++/** @return seller name */ public String getSellerName(){return sellerName;} /** @param v seller */ public void setSellerName(String v){sellerName=v;}
++/** @return category name */ public String getCategoryName(){return categoryName;} /** @param v category */ public void setCategoryName(String v){categoryName=v;}
++}
+diff --git a/src/model/ProductImage.java b/src/model/ProductImage.java
+new file mode 100644
+index 0000000..833d4af
+--- /dev/null
++++ b/src/model/ProductImage.java
+@@ -0,0 +1,9 @@
++package model;
++/** Product image entity. */
++public class ProductImage { private int imageId,productId,sortOrder; private String imageUrl;
++/** Default constructor. */ public ProductImage() {}
++/** @return image id */ public int getImageId(){return imageId;} /** @param v id */ public void setImageId(int v){imageId=v;}
++/** @return product id */ public int getProductId(){return productId;} /** @param v id */ public void setProductId(int v){productId=v;}
++/** @return image url */ public String getImageUrl(){return imageUrl;} /** @param v url */ public void setImageUrl(String v){imageUrl=v;}
++/** @return order */ public int getSortOrder(){return sortOrder;} /** @param v order */ public void setSortOrder(int v){sortOrder=v;}
++}
+diff --git a/src/model/PurchaseResult.java b/src/model/PurchaseResult.java
+new file mode 100644
+index 0000000..aa7465f
+--- /dev/null
++++ b/src/model/PurchaseResult.java
+@@ -0,0 +1,12 @@
++package model;
++
++/**
++ * Result status of a purchase request.
++ */
++public enum PurchaseResult {
++    SUCCESS,
++    NOT_FOUND,
++    ALREADY_SOLD,
++    OWN_PRODUCT,
++    DB_ERROR
++}
+diff --git a/src/model/SearchLog.java b/src/model/SearchLog.java
+new file mode 100644
+index 0000000..6161948
+--- /dev/null
++++ b/src/model/SearchLog.java
+@@ -0,0 +1,8 @@
++package model;
++/** Search log entity. */
++public class SearchLog { private int searchId; private Integer userId; private String keyword;
++/** Default constructor. */ public SearchLog() {}
++/** @return id */ public int getSearchId(){return searchId;} /** @param v id */ public void setSearchId(int v){searchId=v;}
++/** @return user id */ public Integer getUserId(){return userId;} /** @param v user id */ public void setUserId(Integer v){userId=v;}
++/** @return keyword */ public String getKeyword(){return keyword;} /** @param v keyword */ public void setKeyword(String v){keyword=v;}
++}
+diff --git a/src/model/User.java b/src/model/User.java
+new file mode 100644
+index 0000000..444d8ba
+--- /dev/null
++++ b/src/model/User.java
+@@ -0,0 +1,13 @@
++package model;
++
++/** User entity. */
++public class User {
++    private int userId; private String username; private String email; private String passwordHash; private String avatarUrl;
++    /** Default constructor. */ public User() {}
++    /** Full constructor. */ public User(int userId, String username, String email, String passwordHash, String avatarUrl){this.userId=userId;this.username=username;this.email=email;this.passwordHash=passwordHash;this.avatarUrl=avatarUrl;}
++    /** @return user id */ public int getUserId(){return userId;} /** @param userId id */ public void setUserId(int userId){this.userId=userId;}
++    /** @return username */ public String getUsername(){return username;} /** @param username username */ public void setUsername(String username){this.username=username;}
++    /** @return email */ public String getEmail(){return email;} /** @param email email */ public void setEmail(String email){this.email=email;}
++    /** @return password hash */ public String getPasswordHash(){return passwordHash;} /** @param passwordHash hash */ public void setPasswordHash(String passwordHash){this.passwordHash=passwordHash;}
++    /** @return avatar url */ public String getAvatarUrl(){return avatarUrl;} /** @param avatarUrl avatar */ public void setAvatarUrl(String avatarUrl){this.avatarUrl=avatarUrl;}
++}
+diff --git a/src/service/OrderService.java b/src/service/OrderService.java
+new file mode 100644
+index 0000000..d7d668d
+--- /dev/null
++++ b/src/service/OrderService.java
+@@ -0,0 +1,65 @@
++package service;
++
++import dao.OrderDAO;
++import dao.ProductDAO;
++import model.Order;
++import model.Product;
++import util.DBConnection;
++
++import java.sql.Connection;
++
++/**
++ * Service class for order creation and purchase rules.
++ */
++public class OrderService {
++    private final OrderDAO orderDAO = new OrderDAO();
++    private final ProductDAO productDAO = new ProductDAO();
++
++    /**
++     * Places an order for a product.
++     * Rules:
++     * 1) Product must exist and be ACTIVE
++     * 2) Buyer cannot buy own product
++     * 3) Create order and mark product SOLD in one transaction
++     *
++     * @param buyerId   buyer user id
++     * @param productId product id
++     * @return result message for UI
++     */
++    public String placeOrder(int buyerId, int productId) {
++        Product product = productDAO.findById(productId);
++        if (product == null) {
++            return "商品不存在";
++        }
++        if (!"ACTIVE".equals(product.getStatus())) {
++            return "商品已售出";
++        }
++        if (product.getSellerId() == buyerId) {
++            return "不能購買自己的商品";
++        }
++
++        try (Connection connection = DBConnection.getConnection()) {
++            connection.setAutoCommit(false);
++
++            Order order = new Order();
++            order.setBuyerId(buyerId);
++            order.setSellerId(product.getSellerId());
++            order.setProductId(product.getProductId());
++            order.setAmount(product.getPrice());
++            order.setStatus("COMPLETED");
++
++            boolean orderCreated = orderDAO.createOrder(connection, order);
++            boolean sold = productDAO.markSold(connection, productId);
++
++            if (orderCreated && sold) {
++                connection.commit();
++                return "下訂單成功";
++            }
++
++            connection.rollback();
++            return "下訂單失敗，請稍後再試";
++        } catch (Exception ex) {
++            return "系統錯誤：" + ex.getMessage();
++        }
++    }
++}
+diff --git a/src/service/ProductService.java b/src/service/ProductService.java
+new file mode 100644
+index 0000000..5e40d9c
+--- /dev/null
++++ b/src/service/ProductService.java
+@@ -0,0 +1,13 @@
++package service;
++import dao.CategoryDAO;import dao.ProductDAO;import model.Category;import model.Product;import java.util.*;
++/** Service for products. */
++public class ProductService { private final ProductDAO dao=new ProductDAO(); private final CategoryDAO categoryDAO=new CategoryDAO();
++    /** @return active list */ public List<Product> getActiveProducts(){return dao.findActiveProducts();}
++    /** @param userId user id @param keyword keyword @param searchService search service @return result */
++    public List<Product> searchProducts(Integer userId,String keyword,SearchService searchService){if(keyword==null||keyword.trim().isEmpty())return new ArrayList<>();searchService.logSearch(userId,keyword.trim());List<Product> list=dao.searchActiveProducts(keyword.trim());for(Product p:list)dao.increaseSearchHit(p.getProductId());return list;}
++    /** @param sellerId seller @param categoryId category @param title title @param price price @param description desc @return success */
++    public boolean addProduct(int sellerId,int categoryId,String title,int price,String description){if(title==null||title.trim().isEmpty()||price<=0)return false;Product p=new Product();p.setSellerId(sellerId);p.setCategoryId(categoryId);p.setTitle(title.trim());p.setPrice(price);p.setDescription(description);return dao.insertProduct(p);} 
++    /** @param productId id @return product */ public Product getProductDetail(int productId){return dao.findById(productId);} 
++    /** @param productId id @return success */ public boolean markSold(int productId){return dao.markSold(productId);} 
++    /** @return categories */ public List<Category> getCategories(){return categoryDAO.findAll();}
++}
+diff --git a/src/service/SearchService.java b/src/service/SearchService.java
+new file mode 100644
+index 0000000..4804f85
+--- /dev/null
++++ b/src/service/SearchService.java
+@@ -0,0 +1,7 @@
++package service;
++import dao.SearchLogDAO;import java.util.*;
++/** Service for search logs. */
++public class SearchService { private final SearchLogDAO dao=new SearchLogDAO();
++    /** @param userId user id @param keyword keyword */ public void logSearch(Integer userId,String keyword){dao.logKeyword(userId,keyword);} 
++    /** @return top keywords */ public List<String> popularKeywords(){return dao.topKeywordsLast7Days();}
++}
+diff --git a/src/service/UserService.java b/src/service/UserService.java
+new file mode 100644
+index 0000000..b5c6b08
+--- /dev/null
++++ b/src/service/UserService.java
+@@ -0,0 +1,10 @@
++package service;
++import dao.UserDAO;import model.User;import util.PasswordUtil;
++/** Service for user flow. */
++public class UserService { private final UserDAO dao=new UserDAO();
++    /** @param username username @param email email @param password password @return success */
++    public boolean register(String username,String email,String password){if(blank(username)||blank(email)||blank(password))return false;User u=new User();u.setUsername(username.trim());u.setEmail(email.trim());u.setPasswordHash(PasswordUtil.hash(password));u.setAvatarUrl(null);return dao.register(u);} 
++    /** @param username username @param password password @return user */
++    public User login(String username,String password){if(blank(username)||blank(password))return null;return dao.login(username.trim(),PasswordUtil.hash(password));}
++    private boolean blank(String s){return s==null||s.trim().isEmpty();}
++}
+diff --git a/src/util/DBConnection.java b/src/util/DBConnection.java
+new file mode 100644
+index 0000000..8bad395
+--- /dev/null
++++ b/src/util/DBConnection.java
+@@ -0,0 +1,15 @@
++package util;
++
++import java.sql.Connection;
++import java.sql.DriverManager;
++import java.sql.SQLException;
++
++/** Provides database connections. */
++public class DBConnection {
++    private static final String URL = "jdbc:mysql://localhost:3306/campus_marketplace?useSSL=false&serverTimezone=Asia/Taipei";
++    private static final String USER = "root";
++    private static final String PASSWORD = "請在本機自行填入";
++
++    /** @return JDBC connection */
++    public static Connection getConnection() throws SQLException { return DriverManager.getConnection(URL, USER, PASSWORD); }
++}
+diff --git a/src/util/PasswordUtil.java b/src/util/PasswordUtil.java
+new file mode 100644
+index 0000000..8ef8528
+--- /dev/null
++++ b/src/util/PasswordUtil.java
+@@ -0,0 +1,7 @@
++package util;
++import java.nio.charset.StandardCharsets;import java.security.MessageDigest;
++/** Utility for password hashing. */
++public class PasswordUtil {
++    /** @param raw raw password @return SHA-256 hash */
++    public static String hash(String raw){try{MessageDigest md=MessageDigest.getInstance("SHA-256");byte[] b=md.digest(raw.getBytes(StandardCharsets.UTF_8));StringBuilder sb=new StringBuilder();for(byte x:b){sb.append(String.format("%02x",x));}return sb.toString();}catch(Exception e){throw new RuntimeException(e);}}
++}
+diff --git a/src/view/AddProductFrame.java b/src/view/AddProductFrame.java
+new file mode 100644
+index 0000000..d685f17
+--- /dev/null
++++ b/src/view/AddProductFrame.java
+@@ -0,0 +1,9 @@
++package view;
++import controller.ProductController;import model.Category;import model.User;import javax.swing.*;import java.awt.*;import java.util.*;
++/** Add product window. */
++public class AddProductFrame extends JFrame { private final ProductController controller=new ProductController();
++    /** @param home home frame @param user login user */
++    public AddProductFrame(HomeFrame home,User user){setTitle("Add Product");setSize(450,300);setLocationRelativeTo(null);JPanel p=new JPanel(new GridLayout(6,2,8,8));JTextField title=new JTextField();JTextField price=new JTextField();JTextArea desc=new JTextArea();java.util.List<Category> cats=controller.listCategories();JComboBox<String> cbox=new JComboBox<>();for(Category c:cats)cbox.addItem(c.getCategoryId()+" - "+c.getName());JButton save=new JButton("Save");p.add(new JLabel("Title"));p.add(title);p.add(new JLabel("Price"));p.add(price);p.add(new JLabel("Category"));p.add(cbox);p.add(new JLabel("Description"));p.add(new JScrollPane(desc));p.add(save);add(p);
++        save.addActionListener(e->{try{int idx=cbox.getSelectedIndex();int catId=cats.get(idx).getCategoryId();boolean ok=controller.addProduct(user.getUserId(),catId,title.getText(),Integer.parseInt(price.getText()),desc.getText());JOptionPane.showMessageDialog(this,ok?"新增成功":"新增失敗");if(ok){home.refreshList(controller.listActiveProducts());dispose();}}catch(Exception ex){JOptionPane.showMessageDialog(this,"資料格式錯誤");}});
++    }
++}
+diff --git a/src/view/HomeFrame.java b/src/view/HomeFrame.java
+new file mode 100644
+index 0000000..b761d85
+--- /dev/null
++++ b/src/view/HomeFrame.java
+@@ -0,0 +1,18 @@
++package view;
++import controller.ProductController;import model.Product;import model.User;import javax.swing.*;import java.awt.*;import java.util.*;
++/** Home window. */
++public class HomeFrame extends JFrame { private final User currentUser; private final ProductController controller=new ProductController(); private final DefaultListModel<String> model=new DefaultListModel<>(); private final java.util.List<Product> currentProducts=new ArrayList<>();
++    /** @param user login user */
++    public HomeFrame(User user){this.currentUser=user;setTitle("Home - "+user.getUsername());setSize(900,500);setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);setLocationRelativeTo(null);
++        JPanel top=new JPanel();JTextField keyword=new JTextField(20);JButton search=new JButton("Search");JButton refresh=new JButton("Refresh");JButton add=new JButton("Add Product");JButton pop=new JButton("Popular");top.add(keyword);top.add(search);top.add(refresh);top.add(add);top.add(pop);
++        JList<String> list=new JList<>(model);JButton detail=new JButton("View Detail");add(top,BorderLayout.NORTH);add(new JScrollPane(list),BorderLayout.CENTER);add(detail,BorderLayout.SOUTH);
++        refreshList(controller.listActiveProducts());
++        refresh.addActionListener(e->refreshList(controller.listActiveProducts()));
++        search.addActionListener(e->refreshList(controller.searchProducts(currentUser.getUserId(),keyword.getText())));
++        add.addActionListener(e->new AddProductFrame(this,currentUser).setVisible(true));
++        pop.addActionListener(e->JOptionPane.showMessageDialog(this,String.join("\n",controller.popularKeywords())));
++        detail.addActionListener(e->{int i=list.getSelectedIndex();if(i>=0)new ProductDetailFrame(currentUser,currentProducts.get(i),this).setVisible(true);});
++    }
++    /** Refreshes list content. @param products products */
++    public void refreshList(java.util.List<Product> products){model.clear();currentProducts.clear();for(Product p:products){currentProducts.add(p);model.addElement(String.format("#%d | %s | %d | %s | %s | %s",p.getProductId(),p.getTitle(),p.getPrice(),p.getCategoryName(),p.getSellerName(),p.getStatus()));}}
++}
+diff --git a/src/view/LoginFrame.java b/src/view/LoginFrame.java
+new file mode 100644
+index 0000000..7590f07
+--- /dev/null
++++ b/src/view/LoginFrame.java
+@@ -0,0 +1,9 @@
++package view;
++import controller.UserController;import model.User;import javax.swing.*;import java.awt.*;
++/** Login window. */
++public class LoginFrame extends JFrame { private final UserController controller=new UserController();
++    /** Builds login frame. */
++    public LoginFrame(){setTitle("Login");setSize(360,220);setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);setLocationRelativeTo(null);JPanel p=new JPanel(new GridLayout(4,2,8,8));JTextField user=new JTextField();JPasswordField pass=new JPasswordField();JButton login=new JButton("Login");JButton reg=new JButton("Go Register");p.add(new JLabel("Username"));p.add(user);p.add(new JLabel("Password"));p.add(pass);p.add(login);p.add(reg);add(p);
++        login.addActionListener(e->{User u=controller.login(user.getText(),new String(pass.getPassword()));if(u!=null){new HomeFrame(u).setVisible(true);dispose();}else JOptionPane.showMessageDialog(this,"登入失敗");});
++        reg.addActionListener(e->{new RegisterFrame(this).setVisible(true);setVisible(false);});}
++}
+diff --git a/src/view/OrderFrame.java b/src/view/OrderFrame.java
+new file mode 100644
+index 0000000..61836b3
+--- /dev/null
++++ b/src/view/OrderFrame.java
+@@ -0,0 +1,7 @@
++package view;
++import controller.OrderController;import model.Product;import model.User;import javax.swing.*;import java.awt.*;
++/** Order confirm window. */
++public class OrderFrame extends JFrame { private final OrderController controller=new OrderController();
++    /** @param buyer buyer @param product product @param home home @param detail detail */
++    public OrderFrame(User buyer,Product product,HomeFrame home,JFrame detail){setTitle("Order");setSize(360,180);setLocationRelativeTo(null);JPanel p=new JPanel(new BorderLayout());p.add(new JLabel("Confirm buy: "+product.getTitle()+" / "+product.getPrice()),BorderLayout.CENTER);JButton confirm=new JButton("Confirm Order");p.add(confirm,BorderLayout.SOUTH);add(p);confirm.addActionListener(e->{String msg=controller.placeOrder(buyer.getUserId(),product.getProductId());JOptionPane.showMessageDialog(this,msg);home.refreshList(new controller.ProductController().listActiveProducts());if(msg.contains("成功")){detail.dispose();dispose();}});}
++}
+diff --git a/src/view/ProductDetailFrame.java b/src/view/ProductDetailFrame.java
+new file mode 100644
+index 0000000..914b2ca
+--- /dev/null
++++ b/src/view/ProductDetailFrame.java
+@@ -0,0 +1,7 @@
++package view;
++import controller.OrderController;import model.Product;import model.User;import javax.swing.*;import java.awt.*;
++/** Product detail window. */
++public class ProductDetailFrame extends JFrame { private final OrderController orderController=new OrderController();
++    /** @param currentUser current user @param product product @param home home frame */
++    public ProductDetailFrame(User currentUser,Product product,HomeFrame home){setTitle("Product Detail");setSize(500,350);setLocationRelativeTo(null);JTextArea area=new JTextArea();area.setEditable(false);area.setText("Title: "+product.getTitle()+"\nPrice: "+product.getPrice()+"\nDescription: "+product.getDescription()+"\nSeller: "+product.getSellerName()+"\nCategory: "+product.getCategoryName()+"\nStatus: "+product.getStatus());JButton buy=new JButton("Buy");add(new JScrollPane(area),BorderLayout.CENTER);add(buy,BorderLayout.SOUTH);buy.addActionListener(e->{new OrderFrame(currentUser,product,home,this).setVisible(true);});}
++}
+diff --git a/src/view/RegisterFrame.java b/src/view/RegisterFrame.java
+new file mode 100644
+index 0000000..49a5cfe
+--- /dev/null
++++ b/src/view/RegisterFrame.java
+@@ -0,0 +1,9 @@
++package view;
++import controller.UserController;import javax.swing.*;import java.awt.*;
++/** Register window. */
++public class RegisterFrame extends JFrame { private final UserController controller=new UserController();
++    /** @param loginFrame parent login frame */
++    public RegisterFrame(LoginFrame loginFrame){setTitle("Register");setSize(420,260);setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);setLocationRelativeTo(null);JPanel p=new JPanel(new GridLayout(5,2,8,8));JTextField u=new JTextField();JTextField e=new JTextField();JPasswordField pw=new JPasswordField();JButton ok=new JButton("Register");JButton back=new JButton("Back");p.add(new JLabel("Username"));p.add(u);p.add(new JLabel("Email"));p.add(e);p.add(new JLabel("Password"));p.add(pw);p.add(ok);p.add(back);add(p);
++        ok.addActionListener(x->{boolean done=controller.register(u.getText(),e.getText(),new String(pw.getPassword()));JOptionPane.showMessageDialog(this,done?"註冊成功":"註冊失敗，請檢查欄位或重複帳號");if(done){dispose();loginFrame.setVisible(true);}});
++        back.addActionListener(x->{dispose();loginFrame.setVisible(true);});}
++}
