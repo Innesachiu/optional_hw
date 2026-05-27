@@ -1,12 +1,15 @@
 package exception;
 
 /**
- * ValidationException placeholder class.
+ * Exception for invalid input data.
  */
-public class ValidationException {
+public class ValidationException extends AppException {
     /**
-     * Default constructor.
+     * Creates validation exception.
+     *
+     * @param message error message
      */
-    public ValidationException() {
+    public ValidationException(String message) {
+        super(message);
     }
 }

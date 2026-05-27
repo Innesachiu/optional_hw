@@ -1,12 +1,21 @@
 package controller;
 
+import service.SearchService;
+
+import java.util.List;
+
 /**
- * SearchController placeholder class.
+ * Controller for search APIs.
  */
 public class SearchController {
+    private final SearchService searchService = new SearchService();
+
     /**
-     * Default constructor.
+     * Handles GET /api/search/hot-keywords.
+     *
+     * @return keyword list
      */
-    public SearchController() {
+    public List<String> getHotKeywords() {
+        return searchService.getHotKeywords();
     }
 }

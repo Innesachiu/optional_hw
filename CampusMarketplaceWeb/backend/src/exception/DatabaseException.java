@@ -1,12 +1,15 @@
 package exception;
 
 /**
- * DatabaseException placeholder class.
+ * Exception for persistence errors.
  */
-public class DatabaseException {
+public class DatabaseException extends AppException {
     /**
-     * Default constructor.
+     * Creates database exception.
+     *
+     * @param message error message
      */
-    public DatabaseException() {
+    public DatabaseException(String message) {
+        super(message);
     }
 }

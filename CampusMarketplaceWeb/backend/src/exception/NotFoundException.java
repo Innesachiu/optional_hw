@@ -1,12 +1,15 @@
 package exception;
 
 /**
- * NotFoundException placeholder class.
+ * Exception for missing resources.
  */
-public class NotFoundException {
+public class NotFoundException extends AppException {
     /**
-     * Default constructor.
+     * Creates not found exception.
+     *
+     * @param message error message
      */
-    public NotFoundException() {
+    public NotFoundException(String message) {
+        super(message);
     }
 }

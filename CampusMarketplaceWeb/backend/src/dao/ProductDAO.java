@@ -57,6 +57,27 @@ public class ProductDAO {
     }
 
     /**
+     * Finds one product by id.
+     *
+     * @param productId product id
+     * @return product or null
+     */
+    public Product findById(int productId) {
+        String sql = "SELECT product_id,seller_id,category_id,title,price,description,status,search_hit_count,created_at FROM products WHERE product_id=?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException e) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
      * Searches active products by keyword.
      *
      * @param keyword keyword
@@ -78,6 +99,22 @@ public class ProductDAO {
             return list;
         }
         return list;
+    }
+
+    /**
+     * Adds 1 to search hit count.
+     *
+     * @param productId product id
+     * @return true if updated
+     */
+    public boolean increaseSearchHit(int productId) {
+        String sql = "UPDATE products SET search_hit_count=search_hit_count+1 WHERE product_id=?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     /**

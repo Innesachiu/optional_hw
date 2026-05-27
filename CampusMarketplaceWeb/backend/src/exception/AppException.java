@@ -1,12 +1,15 @@
 package exception;
 
 /**
- * AppException placeholder class.
+ * Base runtime exception for application-level errors.
  */
-public class AppException {
+public class AppException extends RuntimeException {
     /**
-     * Default constructor.
+     * Creates an exception with message.
+     *
+     * @param message error message
      */
-    public AppException() {
+    public AppException(String message) {
+        super(message);
     }
 }
