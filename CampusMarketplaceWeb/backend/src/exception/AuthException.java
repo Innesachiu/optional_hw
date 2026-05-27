@@ -1,12 +1,15 @@
 package exception;
 
 /**
- * AuthException placeholder class.
+ * Exception for authentication failures.
  */
-public class AuthException {
+public class AuthException extends AppException {
     /**
-     * Default constructor.
+     * Creates auth exception.
+     *
+     * @param message error message
      */
-    public AuthException() {
+    public AuthException(String message) {
+        super(message);
     }
 }

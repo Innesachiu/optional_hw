@@ -1,12 +1,22 @@
 package controller;
 
+import model.Category;
+import service.ProductService;
+
+import java.util.List;
+
 /**
- * CategoryController placeholder class.
+ * Controller for category APIs.
  */
 public class CategoryController {
+    private final ProductService productService = new ProductService();
+
     /**
-     * Default constructor.
+     * Handles GET /api/categories.
+     *
+     * @return category list
      */
-    public CategoryController() {
+    public List<Category> listCategories() {
+        return productService.listCategories();
     }
 }

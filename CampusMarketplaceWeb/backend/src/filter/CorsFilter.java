@@ -1,12 +1,32 @@
 package filter;
 
+import com.sun.net.httpserver.HttpExchange;
+
 /**
- * CorsFilter placeholder class.
+ * Adds CORS headers and handles preflight checks.
  */
-public class CorsFilter {
+public final class CorsFilter {
+    private CorsFilter() {
+    }
+
     /**
-     * Default constructor.
+     * Applies CORS headers.
+     *
+     * @param exchange exchange
      */
-    public CorsFilter() {
+    public static void apply(HttpExchange exchange) {
+        exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    }
+
+    /**
+     * Checks if request is preflight OPTIONS.
+     *
+     * @param exchange exchange
+     * @return true if OPTIONS
+     */
+    public static boolean isPreflight(HttpExchange exchange) {
+        return "OPTIONS".equalsIgnoreCase(exchange.getRequestMethod());
     }
 }
