@@ -1,3 +1,9 @@
 *.class
 bin/
 out/
+
+# local secrets / db configs
+*.env
+*.local
+CampusMarketplaceWeb/backend/config/db.properties
+CampusMarketplaceWeb/backend/config/*.secret
