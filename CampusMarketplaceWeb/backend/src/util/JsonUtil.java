@@ -1,16 +1,18 @@
 package util;
 
+import dto.ApiResponse;
+
 /**
- * Minimal JSON utility for simple API response generation.
+ * JSON utility for building simple JSON payloads.
  */
 public final class JsonUtil {
     private JsonUtil() {
     }
 
     /**
-     * Escapes text for safe JSON output.
+     * Escapes plain text to safe JSON text.
      *
-     * @param value input text
+     * @param value source text
      * @return escaped text
      */
     public static String escape(String value) {
@@ -21,13 +23,32 @@ public final class JsonUtil {
     }
 
     /**
-     * Builds a simple JSON message response.
+     * Converts ApiResponse to JSON.
      *
-     * @param success success flag
-     * @param message response message
-     * @return JSON string
+     * @param response response
+     * @return json string
      */
-    public static String message(boolean success, String message) {
-        return "{\"success\":" + success + ",\"message\":\"" + escape(message) + "\"}";
+    public static String toJson(ApiResponse response) {
+        return "{\"success\":" + response.isSuccess() + ",\"message\":\"" + escape(response.getMessage()) + "\"}";
+    }
+
+    /**
+     * Wraps raw data JSON into success response object.
+     *
+     * @param dataJson raw json
+     * @return wrapped json
+     */
+    public static String successData(String dataJson) {
+        return "{\"success\":true,\"data\":" + dataJson + "}";
+    }
+
+    /**
+     * Builds fail JSON object.
+     *
+     * @param message message
+     * @return fail json
+     */
+    public static String fail(String message) {
+        return "{\"success\":false,\"message\":\"" + escape(message) + "\"}";
     }
 }
