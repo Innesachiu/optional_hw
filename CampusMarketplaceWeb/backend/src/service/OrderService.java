@@ -3,11 +3,14 @@ package service;
 import dao.OrderDAO;
 import dao.ProductDAO;
 import dto.OrderRequest;
+import dto.OrderResponse;
 import exception.DatabaseException;
 import exception.NotFoundException;
 import exception.ValidationException;
 import model.Order;
 import model.Product;
+
+import java.util.List;
 
 /**
  * Handles order business logic.
@@ -17,7 +20,20 @@ public class OrderService {
     private final ProductDAO productDAO = new ProductDAO();
 
     /**
-     * Creates order and marks product sold.
+     * Gets orders of a buyer.
+     *
+     * @param buyerId buyer id
+     * @return order list
+     */
+    public List<OrderResponse> getOrdersByBuyerId(int buyerId) {
+        if (buyerId <= 0) {
+            throw new ValidationException("invalid buyer id");
+        }
+        return orderDAO.findOrdersByBuyerId(buyerId);
+    }
+
+    /**
+     * Creates an order and marks the target product as sold.
      *
      * @param request order request
      */

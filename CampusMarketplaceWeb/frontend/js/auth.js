@@ -1,3 +1,4 @@
+/** Handles login action. */
 async function handleLogin() {
   const username = document.getElementById('username')?.value?.trim();
   const password = document.getElementById('password')?.value || '';
@@ -14,6 +15,7 @@ async function handleLogin() {
   }
 }
 
+/** Handles register action. */
 async function handleRegister() {
   const username = document.getElementById('username')?.value?.trim();
   const email = document.getElementById('email')?.value?.trim();
@@ -29,19 +31,38 @@ async function handleRegister() {
   }
 }
 
+/** Clears local login data and redirects to login page. */
 function handleLogout() {
   localStorage.removeItem('userId');
   localStorage.removeItem('username');
   window.location.href = 'login.html';
 }
 
+/**
+ * Updates nav state based on login status.
+ * Expects optional elements: #navAuth, #navUser, .logout-btn
+ */
+function renderNavState() {
+  const userId = localStorage.getItem('userId');
+  const username = localStorage.getItem('username') || '';
+  const navAuth = document.getElementById('navAuth');
+  const navUser = document.getElementById('navUser');
+
+  if (userId) {
+    if (navUser) navUser.textContent = `Hi, ${username}`;
+    if (navAuth) navAuth.innerHTML = '<button class="logout-btn">Logout</button>';
+  } else {
+    if (navUser) navUser.textContent = 'Guest';
+    if (navAuth) navAuth.innerHTML = '<a href="login.html">Login</a> / <a href="register.html">Register</a>';
+  }
+
+  document.querySelectorAll('.logout-btn').forEach((btn) => {
+    btn.onclick = handleLogout;
+  });
+}
+
 (function bindAuthPage() {
   document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
   document.getElementById('registerBtn')?.addEventListener('click', handleRegister);
-  document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
-  const welcome = document.getElementById('welcome');
-  if (welcome) {
-    const name = localStorage.getItem('username');
-    welcome.textContent = name ? `Hello, ${name}` : 'Not logged in';
-  }
+  renderNavState();
 })();

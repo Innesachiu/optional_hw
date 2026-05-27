@@ -10,6 +10,7 @@ import controller.SearchController;
 import dto.AddProductRequest;
 import dto.LoginRequest;
 import dto.OrderRequest;
+import dto.OrderResponse;
 import dto.ProductDetailResponse;
 import dto.ProductResponse;
 import dto.RegisterRequest;
@@ -71,6 +72,9 @@ public class ApiRouter implements HttpHandler {
             }
             if ("/api/categories".equals(path)) {
                 handleCategories(exchange); return;
+            }
+            if ("/api/orders/my".equals(path)) {
+                handleMyOrders(exchange); return;
             }
             if ("/api/orders".equals(path)) {
                 handleOrders(exchange); return;
@@ -163,6 +167,14 @@ public class ApiRouter implements HttpHandler {
         ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(orderController.createOrder(req)));
     }
 
+    private void handleMyOrders(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "GET")) { HttpUtil.methodNotAllowed(exchange); return; }
+        Map<String, String> q = RequestUtil.parseQuery(exchange.getRequestURI().getQuery());
+        int buyerId = Integer.parseInt(q.getOrDefault("buyerId", "0"));
+        List<OrderResponse> orders = orderController.myOrders(buyerId);
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(toOrdersJson(orders)));
+    }
+
     private void handleHotKeywords(HttpExchange exchange) throws IOException {
         if (!HttpUtil.isMethod(exchange, "GET")) { HttpUtil.methodNotAllowed(exchange); return; }
         List<String> list = searchController.getHotKeywords();
@@ -184,6 +196,26 @@ public class ApiRouter implements HttpHandler {
                     .append(",\"title\":\"").append(JsonUtil.escape(p.getTitle()))
                     .append("\",\"price\":").append(p.getPrice())
                     .append(",\"status\":\"").append(JsonUtil.escape(p.getStatus())).append("\"}");
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private String toOrdersJson(List<OrderResponse> orders) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < orders.size(); i++) {
+            OrderResponse o = orders.get(i);
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append("{\"orderId\":").append(o.getOrderId())
+                    .append(",\"productId\":").append(o.getProductId())
+                    .append(",\"productTitle\":\"").append(JsonUtil.escape(o.getProductTitle())).append("\"")
+                    .append(",\"price\":").append(o.getPrice())
+                    .append(",\"sellerId\":").append(o.getSellerId())
+                    .append(",\"buyerId\":").append(o.getBuyerId())
+                    .append(",\"status\":\"").append(JsonUtil.escape(o.getStatus())).append("\"")
+                    .append(",\"createdAt\":\"").append(JsonUtil.escape(o.getCreatedAt())).append("\"}");
         }
         sb.append(']');
         return sb.toString();
