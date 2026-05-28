@@ -79,7 +79,7 @@ java -cp CampusMarketplaceWeb/backend/src MainServer
 前端呼叫後端 API 的 base URL：
 
 ```text
-http://localhost:8080/api
+http://localhost:2026/api
 ```
 
 ---
