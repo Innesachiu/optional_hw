@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add Product | Campus Marketplace</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/product.css">
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="navbar">
+      <div class="container navbar-inner">
+        <a class="brand" href="home.html"><span class="brand-mark">CM</span><span>Campus Marketplace</span></a>
+        <div class="nav-links">
+          <a class="nav-link" href="my-orders.html">My Orders</a>
+          <span id="navUser" class="nav-user"></span>
+          <span id="navAuth"></span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <header class="page-header">
+        <h1 class="page-title">Add Product</h1>
+        <p class="page-subtitle">Create a new active listing for other students.</p>
+      </header>
+      <section class="card">
+        <div class="card-body">
+          <div id="message" class="message" role="status"></div>
+          <form id="addProductForm" class="form-grid">
+            <div class="form-row">
+              <label for="title">Title</label>
+              <input id="title" class="input" placeholder="Product title">
+            </div>
+            <div class="form-row">
+              <label for="price">Price</label>
+              <input id="price" class="input" type="number" min="1" step="1" placeholder="Price">
+            </div>
+            <div class="form-row">
+              <label for="categoryId">Category</label>
+              <select id="categoryId" class="select">
+                <option value="">Loading categories...</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="description">Description</label>
+              <textarea id="description" class="textarea" placeholder="Describe condition, pickup place, and notes"></textarea>
+            </div>
+            <div class="actions">
+              <button id="addProductBtn" class="btn btn-primary" type="submit">Add Product</button>
+              <a class="btn btn-secondary" href="home.html">Back Home</a>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/product.js"></script>
+</body>
+</html>
