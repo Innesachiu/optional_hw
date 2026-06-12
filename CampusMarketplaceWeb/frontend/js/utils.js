@@ -10,12 +10,30 @@ function formatPrice(value) {
   return `$${num.toLocaleString()}`;
 }
 
+/** Escapes dynamic text before injecting into HTML. */
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 /** Shows message in #message area if available. */
 function showMessage(message, isError) {
   const el = document.getElementById('message');
   if (!el) return;
   el.textContent = message || '';
-  el.style.color = isError ? 'red' : 'green';
+  el.className = 'message is-visible ' + (isError ? 'is-error' : 'is-success');
+}
+
+/** Clears message in #message area if available. */
+function clearMessage() {
+  const el = document.getElementById('message');
+  if (!el) return;
+  el.textContent = '';
+  el.className = 'message';
 }
 
 /** Ensures user is logged in or redirects to login page. */
@@ -23,7 +41,9 @@ function requireLogin() {
   const userId = localStorage.getItem('userId');
   if (!userId) {
     showMessage('Please login first', true);
-    window.location.href = 'login.html';
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 300);
     return null;
   }
   return {

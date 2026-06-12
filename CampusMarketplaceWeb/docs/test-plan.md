@@ -2,7 +2,7 @@
 
 本文件定義 CampusMarketplaceWeb 的手動測試流程與 curl 範例。
 
-Base URL: `http://localhost:2026/api`
+Base URL: `http://localhost:8080/api`
 
 ---
 
@@ -40,55 +40,55 @@ java -cp CampusMarketplaceWeb/backend/src MainServer
 
 ### 1) Register
 ```bash
-curl -X POST http://localhost:2026/api/auth/register \
+curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"tester01","email":"tester01@example.com","password":"123456"}'
 ```
 
 ### 2) Login
 ```bash
-curl -X POST http://localhost:2026/api/auth/login \
+curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"tester01","password":"123456"}'
 ```
 
 ### 3) List products
 ```bash
-curl "http://localhost:2026/api/products"
+curl "http://localhost:8080/api/products"
 ```
 
 ### 4) Search products
 ```bash
-curl "http://localhost:2026/api/products/search?keyword=book"
+curl "http://localhost:8080/api/products/search?keyword=book"
 ```
 
 ### 5) Product detail
 ```bash
-curl "http://localhost:2026/api/products/1"
+curl "http://localhost:8080/api/products/1"
 ```
 
 ### 6) Add product
 ```bash
-curl -X POST http://localhost:2026/api/products \
+curl -X POST http://localhost:8080/api/products \
   -H "Content-Type: application/json" \
   -d '{"sellerId":1,"categoryId":1,"title":"Test Item","price":120,"description":"for test"}'
 ```
 
 ### 7) Create order
 ```bash
-curl -X POST http://localhost:2026/api/orders \
+curl -X POST http://localhost:8080/api/orders \
   -H "Content-Type: application/json" \
   -d '{"buyerId":2,"productId":1}'
 ```
 
 ### 8) Check my orders
 ```bash
-curl "http://localhost:2026/api/orders/my?buyerId=2"
+curl "http://localhost:8080/api/orders/my?buyerId=2"
 ```
 
 ### 9) Hot keywords
 ```bash
-curl "http://localhost:2026/api/search/hot-keywords"
+curl "http://localhost:8080/api/search/hot-keywords"
 ```
 
 ---

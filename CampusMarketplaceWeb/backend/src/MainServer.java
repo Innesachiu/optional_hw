@@ -15,7 +15,7 @@ public class MainServer {
      * @throws IOException when server cannot start
      */
     public static void main(String[] args) throws IOException {
-        int port = 2026;
+        int port = 8080;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api", new ApiRouter());
         server.setExecutor(null);

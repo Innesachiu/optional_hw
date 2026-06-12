@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public final class DBConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/campus_marketplace?useSSL=false&serverTimezone=Asia/Taipei";
     private static final String USER = "root";
-    private static final String PASSWORD = "Innesa1234554321!";
+    private static final String PASSWORD = "請在本機自行填入";
 
     private DBConnection() {
     }

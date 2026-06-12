@@ -1,6 +1,6 @@
 # API Specification
 
-Base URL: `http://localhost:2026/api`
+Base URL: `http://localhost:8080/api`
 
 ## Common Response Format
 

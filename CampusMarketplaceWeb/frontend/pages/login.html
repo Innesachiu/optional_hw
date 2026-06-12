@@ -1,15 +1,42 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Login</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | Campus Marketplace</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/auth.css">
+</head>
 <body>
-<h1>Login</h1>
-<div id="message"></div>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button id="loginBtn">Login</button>
-<a href="register.html">Go Register</a>
-<script src="../js/api.js"></script>
-<script src="../js/utils.js"></script>
-<script src="../js/auth.js"></script>
+  <main class="auth-page">
+    <section class="card auth-card">
+      <div class="card-body">
+        <div class="brand" aria-label="Campus Marketplace">
+          <span class="brand-mark">CM</span>
+          <span>Campus Marketplace</span>
+        </div>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Login to browse, sell, and order second-hand campus items.</p>
+        <div id="message" class="message" role="status"></div>
+        <form id="loginForm" class="form-grid">
+          <div class="form-row">
+            <label for="username">Username</label>
+            <input id="username" class="input" autocomplete="username" placeholder="Enter username">
+          </div>
+          <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" class="input" type="password" autocomplete="current-password" placeholder="Enter password">
+          </div>
+          <button id="loginBtn" class="btn btn-primary" type="submit">Login</button>
+        </form>
+        <p class="auth-footer">No account yet? <a href="register.html">Create one</a></p>
+      </div>
+    </section>
+  </main>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
 </body>
 </html>
