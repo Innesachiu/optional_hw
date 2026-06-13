@@ -1,32 +1,31 @@
 package filter;
 
+import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
+
 /**
- * Adds CORS headers and handles preflight checks.
+ * Adds CORS headers so frontend pages can call backend APIs.
  */
-public final class CorsFilter {
-    private CorsFilter() {
-    }
-
-    /**
-     * Applies CORS headers.
-     *
-     * @param exchange exchange
-     */
-    public static void apply(HttpExchange exchange) {
+public class CorsFilter extends Filter {
+    @Override
+    public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-        exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.getResponseHeaders().set("Access-Control-Max-Age", "3600");
+
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        chain.doFilter(exchange);
     }
 
-    /**
-     * Checks if request is preflight OPTIONS.
-     *
-     * @param exchange exchange
-     * @return true if OPTIONS
-     */
-    public static boolean isPreflight(HttpExchange exchange) {
-        return "OPTIONS".equalsIgnoreCase(exchange.getRequestMethod());
+    @Override
+    public String description() {
+        return "Adds CORS headers";
     }
 }
