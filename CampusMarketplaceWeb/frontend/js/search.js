@@ -7,7 +7,12 @@ async function searchProducts() {
   const result = await apiGet(`/products/search?keyword=${encodeURIComponent(kw)}`);
   if (btn) { btn.disabled = false; btn.textContent = '搜尋'; }
   if (!result.success) return showMessage(result.message || '搜尋失敗。', true);
-  renderProductList(result.data || []);
+  // store search results and render according to current sort selection
+  if (window.updateProductResults) {
+    window.updateProductResults(result.data || []);
+  } else {
+    renderProductList(result.data || []);
+  }
 }
 
 async function loadHotKeywords() {
@@ -20,23 +25,33 @@ async function loadHotKeywords() {
   }
   const list = result.data || [];
   target.innerHTML = '';
+  // save hot keywords for client-side popularity scoring (parse strings like "kw (8)")
+  window.currentHotKeywords = Array.isArray(list)
+    ? list.map((item) =>
+        window.parseHotKeywordItem ? window.parseHotKeywordItem(item) : item
+      )
+    : [];
   if (list.length === 0) {
     target.innerHTML = '<div class="empty-state">暫無熱門關鍵字。</div>';
     return;
   }
-  list.forEach((item) => {
-    const keyword = String(item).replace(/\s*\(\d+\)\s*$/, '');
+  // render parsed keywords (now objects with { keyword, count })
+  (window.currentHotKeywords || []).forEach((item) => {
     const btn = document.createElement('button');
     btn.className = 'keyword-chip';
     btn.type = 'button';
-    btn.textContent = item;
+    btn.textContent = `${item.keyword} (${item.count})`;
     btn.addEventListener('click', () => {
       const input = document.getElementById('keyword');
-      if (input) input.value = keyword;
+      if (input) input.value = item.keyword;
       searchProducts();
     });
     target.appendChild(btn);
   });
+  // If user currently has 'popular' selected, re-render sorted products without calling API
+  if (document.getElementById('product-sort')?.value === 'popular') {
+    window.renderSortedProducts?.();
+  }
 }
 
 (function bindSearchPage() {

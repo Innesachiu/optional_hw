@@ -48,7 +48,16 @@
           </section>
 
           <section>
-            <h2>商品</h2>
+            <div class="product-section-header">
+              <h2>商品</h2>
+              <div class="product-sort-control">
+                <label for="product-sort">排序方式</label>
+                <select id="product-sort">
+                  <option value="newest" selected>最新上架</option>
+                  <option value="popular">最多搜尋</option>
+                </select>
+              </div>
+            </div>
                 <div id="productList" class="product-grid home-product-grid"></div>
           </section>
         </div>

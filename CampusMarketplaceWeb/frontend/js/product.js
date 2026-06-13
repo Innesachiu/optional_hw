@@ -1,4 +1,85 @@
 let categoryNameById = {};
+// currentProducts stores the latest product array returned from the API
+// and is the source for client-side sorting and re-rendering.
+let currentProducts = [];
+// hot keywords will be stored on window.currentHotKeywords by the search module
+// but provide a default empty array accessor for safety
+window.currentHotKeywords = window.currentHotKeywords || [];
+
+function normalizeText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+function parseHotKeywordItem(item) {
+  if (typeof item === 'string') {
+    const text = item.trim();
+
+    const match = text.match(/^(.*?)\s*\((\d+)\)\s*$/);
+
+    if (match) {
+      return {
+        keyword: match[1].trim(),
+        count: Number(match[2])
+      };
+    }
+
+    return {
+      keyword: text,
+      count: 0
+    };
+  }
+
+  return {
+    keyword:
+      item?.keyword ??
+      item?.query ??
+      item?.searchKeyword ??
+      item?.search_query ??
+      item?.term ??
+      item?.name ??
+      '',
+    count: Number(
+      item?.count ??
+      item?.searchCount ??
+      item?.search_count ??
+      item?.frequency ??
+      item?.total ??
+      item?.hits ??
+      0
+    )
+  };
+}
+
+window.parseHotKeywordItem = parseHotKeywordItem;
+
+function getProductPopularityScore(product) {
+  const productText = normalizeText(product?.title);
+
+  return (window.currentHotKeywords || []).reduce((total, rawItem) => {
+    const item = parseHotKeywordItem(rawItem);
+    const keyword = normalizeText(item.keyword);
+    const count = Number(item.count || 0);
+
+    if (!keyword || count <= 0) return total;
+
+    if (
+      productText === keyword ||
+      productText.includes(keyword) ||
+      keyword.includes(productText)
+    ) {
+      return total + count;
+    }
+
+    return total;
+  }, 0);
+}
+
+// expose for other modules and debugging
+window.normalizeText = normalizeText;
+window.getProductPopularityScore = getProductPopularityScore;
 
 function mapStatusLabel(status) {
   const s = (status || '').toString();
@@ -55,13 +136,45 @@ function renderProductList(products) {
   });
 }
 
+function getSortedProducts(products, sortType) {
+  const sortedProducts = Array.isArray(products) ? [...products] : [];
+  if (sortType === 'popular') {
+    return sortedProducts.sort((a, b) => {
+      const scoreDifference = getProductPopularityScore(b) - getProductPopularityScore(a);
+      if (scoreDifference !== 0) return scoreDifference;
+      return Number(b.productId || b.id || 0) - Number(a.productId || a.id || 0);
+    });
+  }
+
+  // newest (default)
+  return sortedProducts.sort((a, b) => {
+    const aDate = a.createdAt || a.created_at || a.createdTime || a.created_time;
+    const bDate = b.createdAt || b.created_at || b.createdTime || b.created_time;
+    if (aDate && bDate) {
+      return new Date(bDate) - new Date(aDate);
+    }
+    return Number(b.productId || b.id || 0) - Number(a.productId || a.id || 0);
+  });
+}
+
+function updateProductResults(products) {
+  currentProducts = Array.isArray(products) ? [...products] : [];
+  renderSortedProducts();
+}
+
+function renderSortedProducts() {
+  const sortType = document.getElementById('product-sort')?.value || 'newest';
+  const sorted = getSortedProducts(currentProducts, sortType);
+  renderProductList(sorted);
+}
+
 async function loadActiveProducts() {
   clearMessage();
   const list = document.getElementById('productList');
   if (list) list.innerHTML = '<div class="empty-state">載入商品中…</div>';
   const result = await apiGet('/products');
   if (!result.success) return showMessage(result.message || '載入商品失敗。', true);
-  renderProductList(result.data || []);
+  updateProductResults(result.data || []);
 }
 
 async function loadCategories() {
@@ -167,6 +280,10 @@ async function handleAddProduct(event) {
   if (document.getElementById('productList')) {
     loadActiveProducts();
     document.getElementById('reloadBtn')?.addEventListener('click', loadActiveProducts);
+    const sortSelect = document.getElementById('product-sort');
+    sortSelect?.addEventListener('change', () => {
+      renderSortedProducts();
+    });
   }
   if (document.getElementById('productDetail')) {
     loadProductDetail();
@@ -182,3 +299,7 @@ async function handleAddProduct(event) {
   }
   document.getElementById('addProductForm')?.addEventListener('submit', handleAddProduct);
 })();
+
+// expose for other modules (search, etc.) to update and render with current sort
+window.updateProductResults = updateProductResults;
+window.renderSortedProducts = renderSortedProducts;
