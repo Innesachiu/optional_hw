@@ -9,13 +9,13 @@ import java.net.InetSocketAddress;
  */
 public class MainServer {
     /**
-     * Starts HTTP server on port 8080.
+     * Starts HTTP server on port 2026.
      *
      * @param args cli args
      * @throws IOException when server cannot start
      */
     public static void main(String[] args) throws IOException {
-        int port = 8080;
+        int port = 2026;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api", new ApiRouter());
         server.setExecutor(null);
