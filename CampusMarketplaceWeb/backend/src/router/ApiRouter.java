@@ -7,6 +7,7 @@ import controller.CategoryController;
 import controller.OrderController;
 import controller.ProductController;
 import controller.SearchController;
+import controller.FavoriteController;
 import dto.AddProductRequest;
 import dto.LoginRequest;
 import dto.OrderRequest;
@@ -35,6 +36,7 @@ public class ApiRouter implements HttpHandler {
     private final CategoryController categoryController = new CategoryController();
     private final SearchController searchController = new SearchController();
     private final OrderController orderController = new OrderController();
+    private final FavoriteController favoriteController = new FavoriteController();
 
     /**
      * Handles all /api requests.
@@ -84,6 +86,18 @@ public class ApiRouter implements HttpHandler {
             }
             if ("/api/search/hot-keywords".equals(path)) {
                 handleHotKeywords(exchange); return;
+            }
+            if ("/api/favorites".equals(path) && HttpUtil.isMethod(exchange, "POST")) {
+                handleAddFavorite(exchange); return;
+            }
+            if ("/api/favorites".equals(path) && HttpUtil.isMethod(exchange, "GET")) {
+                handleListFavorites(exchange); return;
+            }
+            if ("/api/favorites".equals(path) && HttpUtil.isMethod(exchange, "DELETE")) {
+                handleRemoveFavorite(exchange); return;
+            }
+            if ("/api/favorites/check".equals(path)) {
+                handleCheckFavorite(exchange); return;
             }
             ResponseUtil.sendJson(exchange, 404, JsonUtil.fail("route not found"));
         } catch (AppException e) {
@@ -207,6 +221,38 @@ public class ApiRouter implements HttpHandler {
         }
         sb.append(']');
         ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(sb.toString()));
+    }
+
+    private void handleAddFavorite(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "POST")) { HttpUtil.methodNotAllowed(exchange); return; }
+        String body = RequestUtil.readBody(exchange);
+        int userId = defaultInt(RequestUtil.getJsonInt(body, "userId"), 0);
+        int productId = defaultInt(RequestUtil.getJsonInt(body, "productId"), 0);
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(favoriteController.addFavorite(userId, productId)));
+    }
+
+    private void handleRemoveFavorite(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "DELETE")) { HttpUtil.methodNotAllowed(exchange); return; }
+        Map<String,String> q = RequestUtil.parseQuery(exchange.getRequestURI().getQuery());
+        int userId = Integer.parseInt(q.getOrDefault("userId", "0"));
+        int productId = Integer.parseInt(q.getOrDefault("productId", "0"));
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(favoriteController.removeFavorite(userId, productId)));
+    }
+
+    private void handleListFavorites(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "GET")) { HttpUtil.methodNotAllowed(exchange); return; }
+        Map<String,String> q = RequestUtil.parseQuery(exchange.getRequestURI().getQuery());
+        int userId = Integer.parseInt(q.getOrDefault("userId", "0"));
+        List<dto.ProductResponse> products = favoriteController.listFavorites(userId);
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(toProductsJson(products)));
+    }
+
+    private void handleCheckFavorite(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "GET")) { HttpUtil.methodNotAllowed(exchange); return; }
+        Map<String,String> q = RequestUtil.parseQuery(exchange.getRequestURI().getQuery());
+        int userId = Integer.parseInt(q.getOrDefault("userId", "0"));
+        int productId = Integer.parseInt(q.getOrDefault("productId", "0"));
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(favoriteController.checkFavorite(userId, productId)));
     }
 
     private String toProductsJson(List<ProductResponse> products) {

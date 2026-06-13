@@ -19,6 +19,7 @@
           <a id="navHome" class="nav-link" href="home.html">首頁</a>
           <a id="navAddProduct" class="nav-link" href="add-product.html" hidden>上架商品</a>
           <a id="navMyProducts" class="nav-link" href="my-products.html" hidden>我上架的商品</a>
+          <a id="navFavorites" class="nav-link" href="my-favorites.html" hidden>我的最愛</a>
           <a id="navMyOrders" class="nav-link" href="my-orders.html" hidden>我的訂單</a>
           <span id="navGuest" class="nav-user">訪客</span>
           <span id="navUsername" class="nav-user" hidden></span>
@@ -39,6 +40,9 @@
           <div id="productDetail"></div>
           <div class="actions">
             <button id="orderBtn" class="btn btn-primary" type="button">立即下單</button>
+            <button id="favorite-button" type="button" class="btn favorite-button btn-secondary" hidden>
+              ♡ 加入最愛
+            </button>
             <a class="btn btn-secondary" href="home.html">回首頁</a>
           </div>
         </div>
@@ -50,6 +54,7 @@
   <script src="../js/auth.js"></script>
   <script src="../js/navbar.js"></script>
   <script src="../js/product.js"></script>
+  <script src="../js/favorite.js"></script>
   <script src="../js/order.js"></script>
 </body>
 </html>

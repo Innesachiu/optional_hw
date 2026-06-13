@@ -7,6 +7,7 @@
 
     const addProduct = document.getElementById('navAddProduct');
     const myProducts = document.getElementById('navMyProducts');
+    const favorites = document.getElementById('navFavorites');
     const myOrders = document.getElementById('navMyOrders');
     const guest = document.getElementById('navGuest');
     const usernameElement = document.getElementById('navUsername');
@@ -15,6 +16,7 @@
 
     if (addProduct) addProduct.hidden = !isLoggedIn;
     if (myProducts) myProducts.hidden = !isLoggedIn;
+    if (favorites) favorites.hidden = !isLoggedIn;
     if (myOrders) myOrders.hidden = !isLoggedIn;
     if (logout) logout.hidden = !isLoggedIn;
 

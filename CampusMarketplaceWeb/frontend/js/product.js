@@ -238,6 +238,13 @@ async function loadProductDetail() {
     </div>
   `;
 
+  // notify other modules that product detail has loaded
+  try {
+    document.dispatchEvent(new CustomEvent('productLoaded', { detail: { productId: p.productId } }));
+  } catch (e) {
+    // ignore if CustomEvent unsupported
+  }
+
   const orderBtn = document.getElementById('orderBtn');
   if (orderBtn && p.status !== 'ACTIVE') {
     orderBtn.disabled = true;

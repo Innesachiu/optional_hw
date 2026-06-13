@@ -170,3 +170,16 @@
   text-align: center;
   background: rgba(255,255,255,0.6);
 }
+
+.favorite-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.favorite-button.is-favorited {
+  background: #fff0f2;
+  border-color: #f2a5ae;
+  color: #c33c54;
+}
