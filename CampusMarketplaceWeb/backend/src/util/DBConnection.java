@@ -9,8 +9,8 @@ import java.sql.SQLException;
  */
 public final class DBConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/campus_marketplace?useSSL=false&serverTimezone=Asia/Taipei&allowPublicKeyRetrieval=true";
-    private static final String USER = "root";
-    private static final String PASSWORD = "Innesa1234554321!";
+    private static final String USER = "campus_app";
+    private static final String PASSWORD = "demo1234";
 
     private DBConnection() {
     }
