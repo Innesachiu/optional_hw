@@ -1,4 +1,5 @@
 const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:2026/api`;
+const API_BASE = API_BASE_URL;
 
 async function apiGet(path) {
   try {
