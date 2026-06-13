@@ -1,7 +1,42 @@
 let categoryNameById = {};
+
+// shared category label mapping (English -> 繁體中文)
+const _categoryLabelMap = {
+  Books: '書籍',
+  Electronics: '3C產品',
+  'Daily Goods': '生活用品',
+  Clothing: '服飾',
+  Other: '其他',
+  'Daily Supplies': '日常用品',
+  Sports: '運動用品',
+  Others: '其他'
+};
+
+/**
+ * Get display label for a category. Accepts either a category id (number/string)
+ * or a raw category name string returned from the API. Returns mapped
+ * Traditional Chinese label when available, otherwise returns the original
+ * name, or '未分類' when not available.
+ */
+function getCategoryLabel(value) {
+  if (value === null || value === undefined || value === '') return '未分類';
+
+  // If value is an id (number or numeric string), try lookup first
+  const idKey = String(value);
+  if (categoryNameById && categoryNameById[idKey]) {
+    const raw = categoryNameById[idKey];
+    return _categoryLabelMap[raw] || raw || '未分類';
+  }
+
+  // Otherwise treat value as a raw name
+  const rawName = String(value);
+  return _categoryLabelMap[rawName] || rawName || '未分類';
+}
 // currentProducts stores the latest product array returned from the API
 // and is the source for client-side sorting and re-rendering.
 let currentProducts = [];
+// currently selected category filter (string 'all' or categoryId)
+let selectedCategoryId = 'all';
 // hot keywords will be stored on window.currentHotKeywords by the search module
 // but provide a default empty array accessor for safety
 window.currentHotKeywords = window.currentHotKeywords || [];
@@ -93,9 +128,74 @@ function getStatusBadge(status) {
   return `<span class="${cls}">${escapeHtml(label)}</span>`;
 }
 
-function getCategoryLabel(categoryId) {
-  if (categoryId === null || categoryId === undefined || categoryId === '') return '-';
-  return categoryNameById[categoryId] || `分類 #${categoryId}`;
+// Note: previous implementation (lookup by id) is now handled by the
+// getCategoryLabel function above which accepts id or name.
+
+function getFilteredProducts(products) {
+  if (selectedCategoryId === 'all') return Array.isArray(products) ? [...products] : [];
+
+  return (Array.isArray(products) ? products : []).filter((product) => {
+    const productCategoryId =
+      product?.categoryId ??
+      product?.category_id ??
+      product?.category?.categoryId ??
+      product?.category?.id;
+
+    return String(productCategoryId) === String(selectedCategoryId);
+  });
+}
+
+function renderFilteredAndSortedProducts() {
+  const list = document.getElementById('productList');
+  if (!list) return;
+  // If product objects don't include category info, disable the category filter.
+  const filterSelect = document.getElementById('category-filter');
+  function productsHaveCategoryField() {
+    if (!Array.isArray(currentProducts) || currentProducts.length === 0) return false;
+    return currentProducts.some((product) => {
+      return (
+        product?.categoryId !== undefined ||
+        product?.category_id !== undefined ||
+        product?.category?.categoryId !== undefined ||
+        product?.category?.id !== undefined ||
+        product?.categoryName !== undefined ||
+        product?.category_name !== undefined
+      );
+    });
+  }
+  if (filterSelect) {
+    if (!productsHaveCategoryField()) {
+      filterSelect.disabled = true;
+      filterSelect.title = '商品列表未提供分類欄位，無法篩選';
+    } else {
+      filterSelect.disabled = false;
+      filterSelect.removeAttribute('title');
+    }
+  }
+
+  const filteredProducts = getFilteredProducts(currentProducts);
+  if (!Array.isArray(filteredProducts) || filteredProducts.length === 0) {
+    // decide appropriate empty state message
+    const hasKeyword = Boolean(document.getElementById('keyword')?.value?.trim());
+    if (!Array.isArray(currentProducts) || currentProducts.length === 0) {
+      list.innerHTML = '<div class="empty-state">目前沒有商品。</div>';
+      return;
+    }
+    if (hasKeyword && selectedCategoryId !== 'all') {
+      list.innerHTML = '<div class="empty-state">找不到符合搜尋與商品類型的結果</div>';
+      return;
+    }
+    if (selectedCategoryId !== 'all') {
+      list.innerHTML = '<div class="empty-state">此類型目前沒有符合條件的商品</div>';
+      return;
+    }
+    list.innerHTML = '<div class="empty-state">目前沒有商品。</div>';
+    return;
+  }
+
+  const sortType = document.getElementById('product-sort')?.value || 'newest';
+  const sorted = getSortedProducts(filteredProducts, sortType);
+  renderProductList(sorted);
 }
 
 function renderProductList(products) {
@@ -159,13 +259,12 @@ function getSortedProducts(products, sortType) {
 
 function updateProductResults(products) {
   currentProducts = Array.isArray(products) ? [...products] : [];
-  renderSortedProducts();
+  renderFilteredAndSortedProducts();
 }
 
 function renderSortedProducts() {
-  const sortType = document.getElementById('product-sort')?.value || 'newest';
-  const sorted = getSortedProducts(currentProducts, sortType);
-  renderProductList(sorted);
+  // keep compatibility: renderSortedProducts now applies current filter first
+  renderFilteredAndSortedProducts();
 }
 
 async function loadActiveProducts() {
@@ -199,13 +298,29 @@ async function populateCategorySelect() {
   categories.forEach((category) => {
     const option = document.createElement('option');
     option.value = category.categoryId;
-    option.textContent = category.name;
+    option.textContent = getCategoryLabel(category.name);
     select.appendChild(option);
   });
   if (!categories || categories.length === 0) {
     select.innerHTML = '<option value="">暫無分類</option>';
     select.disabled = true;
   }
+}
+
+async function populateCategoryFilter() {
+  const select = document.getElementById('category-filter');
+  if (!select) return;
+  select.disabled = true;
+  select.innerHTML = '<option value="all">載入分類中…</option>';
+  const categories = await loadCategories();
+  select.disabled = false;
+  select.innerHTML = '<option value="all">全部類型</option>';
+  (categories || []).forEach((category) => {
+    const option = document.createElement('option');
+    option.value = category.categoryId;
+    option.textContent = getCategoryLabel(category.name || category.categoryName);
+    select.appendChild(option);
+  });
 }
 
 async function loadProductDetail() {
@@ -289,7 +404,14 @@ async function handleAddProduct(event) {
     document.getElementById('reloadBtn')?.addEventListener('click', loadActiveProducts);
     const sortSelect = document.getElementById('product-sort');
     sortSelect?.addEventListener('change', () => {
-      renderSortedProducts();
+      renderFilteredAndSortedProducts();
+    });
+    // populate category filter on home page and bind change
+    populateCategoryFilter();
+    const filterSelect = document.getElementById('category-filter');
+    filterSelect?.addEventListener('change', (event) => {
+      selectedCategoryId = event.target.value;
+      renderFilteredAndSortedProducts();
     });
   }
   if (document.getElementById('productDetail')) {
