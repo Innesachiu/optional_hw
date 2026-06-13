@@ -1,32 +1,67 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Home</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home | Campus Marketplace</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/product.css">
+</head>
 <body>
-<h1>Home</h1>
-<div><span id="navUser"></span> <span id="navAuth"></span> <a href="my-orders.html">My Orders</a></div>
-<div id="message"></div>
-<div>
-  <span id="welcome"></span>
-  <button id="logoutBtn">Logout</button>
-  <a href="add-product.html">Add Product</a>
-</div>
-<div>
-  <input id="keyword" placeholder="Search products">
-  <button id="searchBtn">Search</button>
-  <button id="reloadBtn">Reload</button>
-</div>
-<div>
-  <h3>Hot Keywords</h3>
-  <div id="hotKeywords"></div>
-</div>
-<div>
-  <h3>Products</h3>
-  <div id="productList"></div>
-</div>
-<script src="../js/api.js"></script>
-<script src="../js/utils.js"></script>
-<script src="../js/auth.js"></script>
-<script src="../js/product.js"></script>
-<script src="../js/search.js"></script>
+  <div class="page-shell">
+    <nav class="navbar">
+      <div class="container navbar-inner">
+        <a class="brand" href="home.html"><span class="brand-mark">CM</span><span>Campus Marketplace</span></a>
+        <div class="nav-links">
+          <a class="nav-link" href="add-product.html">Add Product</a>
+          <a class="nav-link" href="my-orders.html">My Orders</a>
+          <span id="navUser" class="nav-user"></span>
+          <span id="navAuth"></span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <header class="page-header">
+        <h1 class="page-title">Find campus second-hand deals</h1>
+        <p class="page-subtitle">Browse active products, search items, and check popular keywords.</p>
+      </header>
+      <div id="message" class="message" role="status"></div>
+
+      <section class="main-grid">
+        <div class="stack">
+          <section class="card">
+            <div class="card-body">
+              <div class="search-panel">
+                <input id="keyword" class="input" placeholder="Search title or description">
+                <button id="searchBtn" class="btn btn-primary" type="button">Search</button>
+                <button id="reloadBtn" class="btn btn-secondary" type="button">All Products</button>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2>Products</h2>
+            <div id="productList" class="product-grid"></div>
+          </section>
+        </div>
+
+        <aside class="card">
+          <div class="card-body">
+            <h2>Hot Keywords</h2>
+            <p class="page-subtitle">Popular searches from the last 7 days.</p>
+            <div id="hotKeywords" class="hot-keywords"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/product.js"></script>
+  <script src="../js/search.js"></script>
 </body>
 </html>

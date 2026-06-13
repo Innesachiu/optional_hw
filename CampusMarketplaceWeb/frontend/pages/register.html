@@ -1,16 +1,46 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Register</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register | Campus Marketplace</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/auth.css">
+</head>
 <body>
-<h1>Register</h1>
-<div id="message"></div>
-<input id="username" placeholder="Username">
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button id="registerBtn">Register</button>
-<a href="login.html">Back Login</a>
-<script src="../js/api.js"></script>
-<script src="../js/utils.js"></script>
-<script src="../js/auth.js"></script>
+  <main class="auth-page">
+    <section class="card auth-card">
+      <div class="card-body">
+        <div class="brand" aria-label="Campus Marketplace">
+          <span class="brand-mark">CM</span>
+          <span>Campus Marketplace</span>
+        </div>
+        <h1 class="auth-title">Create account</h1>
+        <p class="auth-subtitle">Join the campus second-hand marketplace.</p>
+        <div id="message" class="message" role="status"></div>
+        <form id="registerForm" class="form-grid">
+          <div class="form-row">
+            <label for="username">Username</label>
+            <input id="username" class="input" autocomplete="username" placeholder="Choose a username">
+          </div>
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input id="email" class="input" type="email" autocomplete="email" placeholder="name@example.com">
+          </div>
+          <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" class="input" type="password" autocomplete="new-password" placeholder="Create a password">
+          </div>
+          <button id="registerBtn" class="btn btn-primary" type="submit">Register</button>
+        </form>
+        <p class="auth-footer">Already registered? <a href="login.html">Back to login</a></p>
+      </div>
+    </section>
+  </main>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
 </body>
 </html>
