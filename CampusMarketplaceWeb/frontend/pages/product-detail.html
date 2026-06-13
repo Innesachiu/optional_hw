@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Detail | Campus Marketplace</title>
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/product.css">
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="navbar">
+      <div class="container navbar-inner">
+        <a class="brand" href="home.html"><span class="brand-mark">CM</span><span>Campus Marketplace</span></a>
+        <div class="nav-links">
+          <a class="nav-link" href="add-product.html">Add Product</a>
+          <a class="nav-link" href="my-orders.html">My Orders</a>
+          <span id="navUser" class="nav-user"></span>
+          <span id="navAuth"></span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <header class="page-header">
+        <h1 class="page-title">Product Detail</h1>
+        <p class="page-subtitle">Review the product before placing an order.</p>
+      </header>
+      <div id="message" class="message" role="status"></div>
+      <section class="card detail-card">
+        <div class="card-body">
+          <div id="productDetail"></div>
+          <div class="actions">
+            <button id="orderBtn" class="btn btn-primary" type="button">Place Order</button>
+            <a class="btn btn-secondary" href="home.html">Back Home</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/product.js"></script>
+  <script src="../js/order.js"></script>
+</body>
+</html>
