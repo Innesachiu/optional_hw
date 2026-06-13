@@ -7,7 +7,20 @@ function getQueryParam(name) {
 /** Formats number to currency-like text. */
 function formatPrice(value) {
   const num = Number(value || 0);
-  return `$${num.toLocaleString()}`;
+  // NT$ currency formatting
+  return `NT$ ${num.toLocaleString('en-US')}`;
+}
+
+/** Formats an ISO/local datetime string to readable local format. */
+function formatDate(value) {
+  if (!value) return '-';
+  try {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleString();
+  } catch (e) {
+    return value;
+  }
 }
 
 /** Escapes dynamic text before injecting into HTML. */
@@ -26,6 +39,8 @@ function showMessage(message, isError) {
   if (!el) return;
   el.textContent = message || '';
   el.className = 'message is-visible ' + (isError ? 'is-error' : 'is-success');
+  el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+  el.setAttribute('role', 'status');
 }
 
 /** Clears message in #message area if available. */

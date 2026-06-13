@@ -3,18 +3,32 @@
  */
 async function placeOrder() {
   clearMessage();
+  if (window._placingOrder) return;
+  const orderBtn = document.getElementById('orderBtn');
   const loginUser = requireLogin();
   if (!loginUser) return;
   const productId = Number(getQueryParam('id'));
   if (!productId) return showMessage('Missing product id.', true);
+  window._placingOrder = true;
+  if (orderBtn) {
+    orderBtn.disabled = true;
+    orderBtn.dataset.orig = orderBtn.textContent;
+    orderBtn.textContent = 'Placing order...';
+  }
 
   const result = await apiPost('/orders', { buyerId: loginUser.userId, productId });
   if (result.success) {
-    showMessage('Order success. Redirecting to My Orders...', false);
-    setTimeout(() => (window.location.href = 'my-orders.html'), 700);
+    showMessage('Order success.', false);
+    // Refresh product detail to reflect updated status
+    try { if (typeof loadProductDetail === 'function') loadProductDetail(); } catch (e) { console.error(e); }
   } else {
     showMessage(result.message || 'Order failed.', true);
   }
+  if (orderBtn) {
+    orderBtn.disabled = false;
+    orderBtn.textContent = orderBtn.dataset.orig || 'Place Order';
+  }
+  window._placingOrder = false;
 }
 
 /**
@@ -52,7 +66,7 @@ async function loadMyOrders() {
         <div class="detail-row"><dt>Order</dt><dd>#${escapeHtml(item.orderId)}</dd></div>
         <div class="detail-row"><dt>Status</dt><dd>${getOrderStatusBadge(item.status)}</dd></div>
         <div class="detail-row"><dt>Product ID</dt><dd>#${escapeHtml(item.productId)}</dd></div>
-        <div class="detail-row"><dt>Created</dt><dd>${escapeHtml(item.createdAt || '-')}</dd></div>
+        <div class="detail-row"><dt>Created</dt><dd>${escapeHtml(formatDate(item.createdAt) || '-')}</dd></div>
       </dl>
     `;
     container.appendChild(row);

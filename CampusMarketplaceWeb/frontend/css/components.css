@@ -1,7 +1,7 @@
 .card {
-  background: #ffffff;
+  background: var(--color-surface, #ffffff);
   border: 1px solid #dbe4f0;
-  border-radius: 18px;
+  border-radius: var(--radius-lg, 18px);
   box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
 }
 
@@ -31,7 +31,7 @@
 }
 
 .btn-primary {
-  background: #2563eb;
+  background: var(--color-primary, #2563eb);
   color: #ffffff;
 }
 
@@ -72,7 +72,7 @@
 .input:focus,
 .select:focus,
 .textarea:focus {
-  border-color: #2563eb;
+  border-color: var(--color-primary, #2563eb);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
@@ -113,7 +113,7 @@
 
 .message.is-error {
   background: #fee2e2;
-  color: #991b1b;
+  color: var(--color-error, #991b1b);
   border: 1px solid #fecaca;
 }
 

@@ -5,13 +5,29 @@
 html {
   min-height: 100%;
   font-family: Arial, Helvetica, sans-serif;
-  background: #f4f7fb;
-  color: #1f2937;
+  background: var(--color-background, #f4f7fb);
+  color: var(--color-text, #1f2937);
 }
 
 body {
   min-height: 100vh;
   margin: 0;
+}
+
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-border: #dbe1ea;
+  --color-success: #15803d;
+  --color-error: #dc2626;
+  --color-warning: #d97706;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
 }
 
 button,

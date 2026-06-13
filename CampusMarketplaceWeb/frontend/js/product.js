@@ -15,7 +15,11 @@ function renderProductList(products) {
   const list = document.getElementById('productList');
   if (!list) return;
   list.innerHTML = '';
-  if (!products || products.length === 0) {
+  if (!products) {
+    list.innerHTML = '<div class="empty-state">Failed to load products.</div>';
+    return;
+  }
+  if (products.length === 0) {
     list.innerHTML = '<div class="empty-state">No active products found.</div>';
     return;
   }
@@ -44,6 +48,8 @@ function renderProductList(products) {
 
 async function loadActiveProducts() {
   clearMessage();
+  const list = document.getElementById('productList');
+  if (list) list.innerHTML = '<div class="empty-state">Loading products...</div>';
   const result = await apiGet('/products');
   if (!result.success) return showMessage(result.message || 'Load products failed.', true);
   renderProductList(result.data || []);
@@ -63,7 +69,10 @@ async function loadCategories() {
 async function populateCategorySelect() {
   const select = document.getElementById('categoryId');
   if (!select) return;
+  select.disabled = true;
+  select.innerHTML = '<option value="">Loading categories...</option>';
   const categories = await loadCategories();
+  select.disabled = false;
   select.innerHTML = '<option value="">Select category</option>';
   categories.forEach((category) => {
     const option = document.createElement('option');
@@ -71,8 +80,9 @@ async function populateCategorySelect() {
     option.textContent = category.name;
     select.appendChild(option);
   });
-  if (categories.length === 0) {
+  if (!categories || categories.length === 0) {
     select.innerHTML = '<option value="">No categories available</option>';
+    select.disabled = true;
   }
 }
 
@@ -152,7 +162,12 @@ async function handleAddProduct(event) {
     loadProductDetail();
   }
   if (document.getElementById('categoryId')) {
-    requireLogin();
+    const user = requireLogin();
+    if (!user) {
+      // requireLogin will redirect, but ensure immediate redirect for add-product page
+      window.location.href = 'login.html';
+      return;
+    }
     populateCategorySelect();
   }
   document.getElementById('addProductForm')?.addEventListener('submit', handleAddProduct);
