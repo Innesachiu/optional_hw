@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:2026/api`;
 
 async function apiGet(path) {
   try {

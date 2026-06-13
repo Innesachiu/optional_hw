@@ -33,7 +33,8 @@ public class ProductDAO {
             ps.setInt(4, product.getPrice());
             ps.setString(5, product.getDescription());
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
+        } catch (SQLException e){
+            e.printStackTrace();
             return false;
         }
     }
