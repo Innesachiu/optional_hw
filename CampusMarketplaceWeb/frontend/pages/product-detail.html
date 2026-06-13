@@ -49,6 +49,63 @@
       </section>
     </main>
   </div>
+
+  <!-- Order confirmation modal -->
+  <div
+    id="order-confirm-modal"
+    class="modal-overlay"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="order-confirm-title"
+  >
+    <div class="modal-card" role="document">
+      <button
+        id="order-confirm-close"
+        class="modal-close"
+        type="button"
+        aria-label="關閉確認視窗"
+      >
+        ×
+      </button>
+
+      <h2 id="order-confirm-title">確認購買</h2>
+
+      <p class="modal-message">
+        是否確認購買以下商品？
+      </p>
+
+      <div class="order-confirm-product">
+        <p>
+          <span>商品名稱</span>
+          <strong id="order-confirm-product-title"></strong>
+        </p>
+
+        <p>
+          <span>價格</span>
+          <strong id="order-confirm-product-price"></strong>
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          id="order-confirm-cancel"
+          class="btn btn-secondary"
+          type="button"
+        >
+          取消
+        </button>
+
+        <button
+          id="order-confirm-submit"
+          class="btn btn-primary"
+          type="button"
+        >
+          確認購買
+        </button>
+      </div>
+    </div>
+  </div>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/auth.js"></script>

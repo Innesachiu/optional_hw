@@ -37,6 +37,8 @@ function getCategoryLabel(value) {
 let currentProducts = [];
 // currently selected category filter (string 'all' or categoryId)
 let selectedCategoryId = 'all';
+// currently viewed product on product-detail page
+window.currentProduct = window.currentProduct || null;
 // hot keywords will be stored on window.currentHotKeywords by the search module
 // but provide a default empty array accessor for safety
 window.currentHotKeywords = window.currentHotKeywords || [];
@@ -335,6 +337,8 @@ async function loadProductDetail() {
   if (!result.success) return showMessage(result.message || '載入商品詳細失敗。', true);
 
   const p = result.data;
+  // expose current product so other modules (order modal) can use it
+  window.currentProduct = p;
   detailArea.innerHTML = `
     <div class="detail-layout">
       <div class="detail-image" aria-hidden="true"></div>
@@ -367,6 +371,122 @@ async function loadProductDetail() {
     orderBtn.classList.add('btn-secondary');
   }
 }
+
+// --- Order confirmation modal functions ---
+function openOrderConfirmModal(product) {
+  const modal = document.getElementById('order-confirm-modal');
+  if (!modal) return;
+
+  // prefer passed product, otherwise use global currentProduct
+  const prod = product || window.currentProduct;
+  if (!prod) return showMessage('找不到商品資訊。', true);
+
+  // Prevent opening modal for SOLD or non-active items
+  if ((prod.status || '').toString() === 'SOLD') return;
+
+  // Populate fields
+  const titleEl = document.getElementById('order-confirm-product-title');
+  const priceEl = document.getElementById('order-confirm-product-price');
+  if (titleEl) titleEl.textContent = prod.title || '未命名商品';
+  if (priceEl) priceEl.textContent = `NT$ ${Number(prod.price || 0).toLocaleString('zh-TW')}`;
+
+  modal.hidden = false;
+  document.body.classList.add('modal-open');
+
+  // focus confirm button
+  const submit = document.getElementById('order-confirm-submit');
+  submit?.focus();
+
+  // attach handlers
+  attachOrderModalHandlers();
+}
+
+function closeOrderConfirmModal() {
+  const modal = document.getElementById('order-confirm-modal');
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.classList.remove('modal-open');
+
+  // remove handlers
+  detachOrderModalHandlers();
+
+  // return focus to order button
+  const orderBtn = document.getElementById('orderBtn');
+  orderBtn?.focus();
+}
+
+let _orderModalHandlers = null;
+function attachOrderModalHandlers() {
+  if (_orderModalHandlers) return; // already attached
+  const overlay = document.getElementById('order-confirm-modal');
+  const closeBtn = document.getElementById('order-confirm-close');
+  const cancelBtn = document.getElementById('order-confirm-cancel');
+  const submitBtn = document.getElementById('order-confirm-submit');
+
+  const onOverlayClick = (e) => {
+    if (e.target === overlay) closeOrderConfirmModal();
+  };
+
+  const onEsc = (e) => {
+    if (e.key === 'Escape') closeOrderConfirmModal();
+  };
+
+  const onCancel = () => closeOrderConfirmModal();
+
+  const onClose = () => closeOrderConfirmModal();
+
+  const onSubmit = async () => {
+    if (!submitBtn) return;
+    // disable to avoid double clicks
+    submitBtn.disabled = true;
+    submitBtn.dataset.orig = submitBtn.textContent;
+    submitBtn.textContent = '處理中…';
+
+    // reuse existing placeOrder function from order.js
+    try {
+      if (typeof placeOrder === 'function') {
+        const res = await placeOrder();
+        if (res && res.success) {
+          closeOrderConfirmModal();
+        } else {
+          // leave modal open; placeOrder already shows error message
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitBtn.dataset.orig || '確認購買';
+        }
+      } else {
+        // fallback: if placeOrder not present, close modal
+        closeOrderConfirmModal();
+      }
+    } catch (e) {
+      console.error(e);
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset.orig || '確認購買';
+    }
+  };
+
+  overlay.addEventListener('click', onOverlayClick);
+  document.addEventListener('keydown', onEsc);
+  closeBtn?.addEventListener('click', onClose);
+  cancelBtn?.addEventListener('click', onCancel);
+  submitBtn?.addEventListener('click', onSubmit);
+
+  _orderModalHandlers = { overlay, onOverlayClick, onEsc, closeBtn, onClose, cancelBtn, onCancel, submitBtn, onSubmit };
+}
+
+function detachOrderModalHandlers() {
+  if (!_orderModalHandlers) return;
+  const h = _orderModalHandlers;
+  h.overlay.removeEventListener('click', h.onOverlayClick);
+  document.removeEventListener('keydown', h.onEsc);
+  h.closeBtn?.removeEventListener('click', h.onClose);
+  h.cancelBtn?.removeEventListener('click', h.onCancel);
+  h.submitBtn?.removeEventListener('click', h.onSubmit);
+  _orderModalHandlers = null;
+}
+
+// expose modal controls globally so order.js can call openOrderConfirmModal
+window.openOrderConfirmModal = openOrderConfirmModal;
+window.closeOrderConfirmModal = closeOrderConfirmModal;
 
 async function handleAddProduct(event) {
   if (event) event.preventDefault();

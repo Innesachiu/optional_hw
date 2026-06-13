@@ -15,7 +15,6 @@ async function placeOrder() {
     orderBtn.dataset.orig = orderBtn.textContent;
     orderBtn.textContent = '下單中...';
   }
-
   const result = await apiPost('/orders', { buyerId: loginUser.userId, productId });
   if (result.success) {
     showMessage('下單成功。', false);
@@ -29,6 +28,7 @@ async function placeOrder() {
     orderBtn.textContent = orderBtn.dataset.orig || '立即下單';
   }
   window._placingOrder = false;
+  return result;
 }
 
 /**
@@ -81,8 +81,34 @@ function getOrderStatusBadge(status) {
 }
 
 (function bindOrderPage() {
-  const btn = document.getElementById('orderBtn');
-  if (btn) btn.addEventListener('click', placeOrder);
+  let btn = document.getElementById('orderBtn');
+  if (btn) {
+    // Remove any previously attached event listeners by replacing the node with a clean clone
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    btn = document.getElementById('orderBtn');
+
+    // Attach a single onclick handler (assignment avoids accumulating listeners)
+    btn.onclick = () => {
+      // keep existing login redirect behavior
+      const loginUser = requireLogin();
+      if (!loginUser) return;
+
+      // use the current loaded product if available
+      const p = window.currentProduct;
+      if (!p) return showMessage('找不到商品資訊。', true);
+
+      // Do not open modal for SOLD or disabled button
+      if (String(p.status).toUpperCase() !== 'ACTIVE' || btn.disabled) return;
+
+      if (typeof window.openOrderConfirmModal === 'function') {
+        window.openOrderConfirmModal(p);
+      } else {
+        // If modal unavailable, show a message but do not directly place order
+        showMessage('目前無法開啟下單確認視窗，請稍後再試。', true);
+      }
+    };
+  }
 
   if (document.getElementById('orderList')) {
     loadMyOrders();
