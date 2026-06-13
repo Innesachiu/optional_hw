@@ -8,25 +8,25 @@ async function placeOrder() {
   const loginUser = requireLogin();
   if (!loginUser) return;
   const productId = Number(getQueryParam('id'));
-  if (!productId) return showMessage('Missing product id.', true);
+  if (!productId) return showMessage('找不到商品 ID。', true);
   window._placingOrder = true;
   if (orderBtn) {
     orderBtn.disabled = true;
     orderBtn.dataset.orig = orderBtn.textContent;
-    orderBtn.textContent = 'Placing order...';
+    orderBtn.textContent = '下單中...';
   }
 
   const result = await apiPost('/orders', { buyerId: loginUser.userId, productId });
   if (result.success) {
-    showMessage('Order success.', false);
+    showMessage('下單成功。', false);
     // Refresh product detail to reflect updated status
     try { if (typeof loadProductDetail === 'function') loadProductDetail(); } catch (e) { console.error(e); }
   } else {
-    showMessage(result.message || 'Order failed.', true);
+    showMessage(result.message || '下單失敗。', true);
   }
   if (orderBtn) {
     orderBtn.disabled = false;
-    orderBtn.textContent = orderBtn.dataset.orig || 'Place Order';
+    orderBtn.textContent = orderBtn.dataset.orig || '立即下單';
   }
   window._placingOrder = false;
 }
@@ -44,7 +44,7 @@ async function loadMyOrders() {
 
   const result = await apiGet(`/orders/my?buyerId=${encodeURIComponent(user.userId)}`);
   if (!result.success) {
-    showMessage(result.message || 'Load orders failed.', true);
+    showMessage(result.message || '載入訂單失敗。', true);
     container.innerHTML = '';
     return;
   }
@@ -60,13 +60,13 @@ async function loadMyOrders() {
     const row = document.createElement('article');
     row.className = 'card order-card';
     row.innerHTML = `
-      <h3>${escapeHtml(item.productTitle || 'Untitled product')}</h3>
+      <h3>${escapeHtml(item.productTitle || '未命名商品')}</h3>
       <div class="product-price">${formatPrice(item.price)}</div>
       <dl class="detail-list">
-        <div class="detail-row"><dt>Order</dt><dd>#${escapeHtml(item.orderId)}</dd></div>
-        <div class="detail-row"><dt>Status</dt><dd>${getOrderStatusBadge(item.status)}</dd></div>
-        <div class="detail-row"><dt>Product ID</dt><dd>#${escapeHtml(item.productId)}</dd></div>
-        <div class="detail-row"><dt>Created</dt><dd>${escapeHtml(formatDate(item.createdAt) || '-')}</dd></div>
+        <div class="detail-row"><dt>訂單編號</dt><dd>#${escapeHtml(item.orderId)}</dd></div>
+        <div class="detail-row"><dt>狀態</dt><dd>${getOrderStatusBadge(item.status)}</dd></div>
+        <div class="detail-row"><dt>商品編號</dt><dd>#${escapeHtml(item.productId)}</dd></div>
+        <div class="detail-row"><dt>建立時間</dt><dd>${escapeHtml(formatDate(item.createdAt) || '-')}</dd></div>
       </dl>
     `;
     container.appendChild(row);
@@ -74,8 +74,10 @@ async function loadMyOrders() {
 }
 
 function getOrderStatusBadge(status) {
-  const cls = status === 'COMPLETED' ? 'badge badge-success' : 'badge badge-muted';
-  return `<span class="${cls}">${escapeHtml(status || 'UNKNOWN')}</span>`;
+  const s = (status || '').toString();
+  const label = s === 'COMPLETED' ? '交易完成' : (s === 'PENDING' ? '待交易' : escapeHtml(s || '未知'));
+  const cls = s === 'COMPLETED' ? 'badge badge-success' : 'badge badge-muted';
+  return `<span class="${cls}">${escapeHtml(label)}</span>`;
 }
 
 (function bindOrderPage() {

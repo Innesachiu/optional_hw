@@ -1,6 +1,4 @@
 .auth-page {
-  display: grid;
-  place-items: center;
   min-height: 100vh;
   padding: 32px 16px;
 }
@@ -8,6 +6,22 @@
 .auth-card {
   width: min(440px, 100%);
 }
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: 1fr min(520px, 46%);
+  gap: 28px;
+  align-items: center;
+  padding: 64px 0;
+}
+
+.auth-promo .card-body {
+  padding: 36px;
+}
+
+.brand-name { font-weight: 800; font-size: 18px; }
+.promo-title { font-size: 28px; margin-top: 12px; color: var(--color-text); }
+.promo-subtitle { color: var(--color-text-muted); margin-top: 8px; }
 
 .auth-card .card-body {
   padding: 30px;
@@ -54,3 +68,9 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .auth-grid { grid-template-columns: 1fr; padding: 24px 0; }
+  .auth-promo { order: -1; }
+  .auth-card { width: 100%; }
+}

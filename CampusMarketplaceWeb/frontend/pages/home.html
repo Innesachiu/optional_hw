@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Home | Campus Marketplace</title>
+  <title>首頁 | 校園二手交易</title>
   <link rel="stylesheet" href="../css/reset.css">
   <link rel="stylesheet" href="../css/layout.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -13,25 +13,25 @@
   <div class="page-shell">
     <nav class="navbar">
       <div class="container navbar-inner">
-        <a class="brand" href="home.html"><span class="brand-mark">CM</span><span>Campus Marketplace</span></a>
+        <a class="brand" href="home.html"><span class="brand-mark">CM</span><span>校園二手交易</span></a>
         <div class="nav-links">
           <!-- Navbar managed by js/navbar.js: fixed IDs, toggle with .hidden -->
-          <a id="navHome" class="nav-link" href="home.html">Home</a>
-          <a id="navAddProduct" class="nav-link" href="add-product.html" hidden>Add Product</a>
-          <a id="navMyProducts" class="nav-link" href="my-products.html" hidden>My Products</a>
-          <a id="navMyOrders" class="nav-link" href="my-orders.html" hidden>My Orders</a>
-          <span id="navGuest" class="nav-user">Guest</span>
+          <a id="navHome" class="nav-link" href="home.html">首頁</a>
+          <a id="navAddProduct" class="nav-link" href="add-product.html" hidden>上架商品</a>
+          <a id="navMyProducts" class="nav-link" href="my-products.html" hidden>我上架的商品</a>
+          <a id="navMyOrders" class="nav-link" href="my-orders.html" hidden>我的訂單</a>
+          <span id="navGuest" class="nav-user">訪客</span>
           <span id="navUsername" class="nav-user" hidden></span>
-          <a id="navLoginRegister" class="nav-link" href="login.html">Login / Register</a>
-          <button id="navLogout" class="btn btn-danger" type="button" hidden>Logout</button>
+          <a id="navLoginRegister" class="nav-link" href="login.html">登入 / 註冊</a>
+          <button id="navLogout" class="btn btn-danger" type="button" hidden>登出</button>
         </div>
       </div>
     </nav>
 
     <main class="container">
       <header class="page-header">
-        <h1 class="page-title">Find campus second-hand deals</h1>
-        <p class="page-subtitle">Browse active products, search items, and check popular keywords.</p>
+        <h1 class="page-title">找到校園裡的下一件好物</h1>
+        <p class="page-subtitle">瀏覽最新商品，搜尋課本、3C 與生活用品</p>
       </header>
       <div id="message" class="message" role="status"></div>
 
@@ -40,23 +40,23 @@
           <section class="card">
             <div class="card-body">
               <div class="search-panel">
-                <input id="keyword" class="input" placeholder="Search title or description">
-                <button id="searchBtn" class="btn btn-primary" type="button">Search</button>
-                <button id="reloadBtn" class="btn btn-secondary" type="button">All Products</button>
+                <input id="keyword" class="input" placeholder="搜尋商品標題或描述">
+                <button id="searchBtn" class="btn btn-primary" type="button">搜尋</button>
+                <button id="reloadBtn" class="btn btn-secondary" type="button">全部商品</button>
               </div>
             </div>
           </section>
 
           <section>
-            <h2>Products</h2>
-            <div id="productList" class="product-grid"></div>
+            <h2>商品</h2>
+                <div id="productList" class="product-grid home-product-grid"></div>
           </section>
         </div>
 
         <aside class="card">
           <div class="card-body">
-            <h2>Hot Keywords</h2>
-            <p class="page-subtitle">Popular searches from the last 7 days.</p>
+            <h2>熱門關鍵字</h2>
+              <p class="page-subtitle">最近 7 天內熱門搜尋關鍵字</p>
             <div id="hotKeywords" class="hot-keywords"></div>
           </div>
         </aside>

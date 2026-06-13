@@ -9,12 +9,12 @@ async function handleLogin(event) {
   const password = document.getElementById('password')?.value || '';
   if (!username || !password) {
     window._loginSubmitting = false;
-    return showMessage('Username and password are required.', true);
+    return showMessage('帳號與密碼皆為必填。', true);
   }
   if (loginBtn) {
     loginBtn.disabled = true;
     loginBtn.dataset.orig = loginBtn.textContent;
-    loginBtn.textContent = 'Signing in...';
+    loginBtn.textContent = '登入中...';
   }
   const result = await apiPost('/auth/login', { username, password });
   if (result.success) {
@@ -23,17 +23,17 @@ async function handleLogin(event) {
       localStorage.setItem('userId', String(user.userId));
       localStorage.setItem('username', user.username);
       if (typeof renderNavState === 'function') renderNavState();
-      showMessage('Login success. Redirecting...', false);
+      showMessage('登入成功，正在轉跳...', false);
       setTimeout(() => (window.location.href = 'home.html'), 450);
     } else {
       showMessage('登入成功，但伺服器沒有回傳使用者資料。', true);
     }
   } else {
-    showMessage(result.message || 'Login failed.', true);
+    showMessage(result.message || '登入失敗', true);
   }
   if (loginBtn) {
     loginBtn.disabled = false;
-    loginBtn.textContent = loginBtn.dataset.orig || 'Login';
+    loginBtn.textContent = loginBtn.dataset.orig || '登入';
   }
   window._loginSubmitting = false;
 }
@@ -51,32 +51,32 @@ async function handleRegister(event) {
   const confirm = document.getElementById('confirmPassword')?.value || '';
   if (!username || !email || !password) {
     window._registerSubmitting = false;
-    return showMessage('All fields are required.', true);
+    return showMessage('所有欄位皆為必填。', true);
   }
   // simple email format check
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     window._registerSubmitting = false;
-    return showMessage('Please enter a valid email address.', true);
+    return showMessage('請輸入有效的電子郵件地址。', true);
   }
   if (password !== confirm) {
     window._registerSubmitting = false;
-    return showMessage('Password and confirmation do not match.', true);
+    return showMessage('密碼與確認密碼不相符。', true);
   }
   if (registerBtn) {
     registerBtn.disabled = true;
     registerBtn.dataset.orig = registerBtn.textContent;
-    registerBtn.textContent = 'Creating...';
+    registerBtn.textContent = '建立中...';
   }
   const result = await apiPost('/auth/register', { username, email, password });
   if (result.success) {
-    showMessage('Register success. Please login.', false);
+    showMessage('註冊成功，請登入。', false);
     setTimeout(() => (window.location.href = 'login.html'), 700);
   } else {
-    showMessage(result.message || 'Register failed.', true);
+    showMessage(result.message || '註冊失敗', true);
   }
   if (registerBtn) {
     registerBtn.disabled = false;
-    registerBtn.textContent = registerBtn.dataset.orig || 'Register';
+    registerBtn.textContent = registerBtn.dataset.orig || '註冊';
   }
   window._registerSubmitting = false;
 }

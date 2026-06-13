@@ -3,38 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login | Campus Marketplace</title>
+  <title>登入 | 校園二手交易</title>
   <link rel="stylesheet" href="../css/reset.css">
   <link rel="stylesheet" href="../css/layout.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/auth.css">
 </head>
 <body>
-  <main class="auth-page">
-    <section class="card auth-card">
-      <div class="card-body">
-        <div class="brand" aria-label="Campus Marketplace">
-          <span class="brand-mark">CM</span>
-          <span>Campus Marketplace</span>
+  <div class="page-shell auth-page">
+    <main class="container auth-grid">
+      <aside class="auth-promo card">
+        <div class="card-body">
+          <div class="brand" aria-label="Campus Marketplace">
+            <span class="brand-mark">CM</span>
+            <span class="brand-name">校園二手交易</span>
+          </div>
+          <h1 class="promo-title">校園二手交易</h1>
+          <p class="promo-subtitle">讓好物在校園裡繼續流動<br>登入後即可上架商品、下訂單與查看紀錄</p>
         </div>
-        <h1 class="auth-title">Welcome back</h1>
-        <p class="auth-subtitle">Login to browse, sell, and order second-hand campus items.</p>
-        <div id="message" class="message" role="status"></div>
-        <form id="loginForm" class="form-grid">
-          <div class="form-row">
-            <label for="username">Username</label>
-            <input id="username" class="input" autocomplete="username" placeholder="Enter username">
-          </div>
-          <div class="form-row">
-            <label for="password">Password</label>
-            <input id="password" class="input" type="password" autocomplete="current-password" placeholder="Enter password">
-          </div>
-          <button id="loginBtn" class="btn btn-primary" type="submit">Login</button>
-        </form>
-        <p class="auth-footer">No account yet? <a href="register.html">Create one</a></p>
-      </div>
-    </section>
-  </main>
+      </aside>
+
+      <section class="card auth-card">
+        <div class="card-body">
+          <h2 class="auth-title">登入帳號</h2>
+          <p class="auth-subtitle">歡迎回來，請輸入帳號與密碼</p>
+          <div id="message" class="message" role="status"></div>
+          <form id="loginForm" class="form-grid">
+            <div class="form-row">
+              <label for="username">帳號</label>
+              <input id="username" class="input" autocomplete="username" placeholder="輸入帳號">
+            </div>
+            <div class="form-row">
+              <label for="password">密碼</label>
+              <input id="password" class="input" type="password" autocomplete="current-password" placeholder="輸入密碼">
+            </div>
+            <button id="loginBtn" class="btn btn-primary" type="submit">登入</button>
+          </form>
+          <p class="auth-footer">還沒有帳號？ <a href="register.html">註冊一個</a></p>
+        </div>
+      </section>
+    </main>
+  </div>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/auth.js"></script>

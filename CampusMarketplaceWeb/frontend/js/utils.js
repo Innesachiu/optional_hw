@@ -55,7 +55,7 @@ function clearMessage() {
 function requireLogin() {
   const userId = localStorage.getItem('userId');
   if (!userId) {
-    showMessage('Please login first', true);
+    showMessage('請先登入', true);
     setTimeout(() => {
       window.location.href = 'login.html';
     }, 300);

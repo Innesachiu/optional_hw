@@ -39,9 +39,29 @@ textarea {
 
 a {
   color: inherit;
+/* Prevent accidental horizontal scroll on small devices while keeping content responsive */
+html, body { max-width: 100%; overflow-x: hidden; }
   text-decoration: none;
 }
 
 img {
   max-width: 100%;
+}
+
+/* Utility: hide via attribute selector (used by navbar toggling) */
+[hidden] {
+  display: none !important;
+}
+
+/* Additional site-level tokens and background */
+:root {
+  --site-bg-start: #d9eef0;
+  --site-bg-end: #fff7d6;
+  --surface-translucent: rgba(255,255,255,0.86);
+  --card-radius: 22px;
+  --card-shadow: 0 12px 30px rgba(42,60,90,0.06);
+}
+
+body {
+  background: linear-gradient(120deg, var(--site-bg-start) 0%, var(--site-bg-end) 52%);
 }

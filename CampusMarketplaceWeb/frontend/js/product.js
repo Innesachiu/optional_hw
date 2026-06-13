@@ -1,14 +1,20 @@
 let categoryNameById = {};
 
+function mapStatusLabel(status) {
+  const s = (status || '').toString();
+  return s === 'ACTIVE' ? '販售中' : (s === 'SOLD' ? '已售出' : (s || '未知'));
+}
+
 function getStatusBadge(status) {
-  const safeStatus = escapeHtml(status || 'UNKNOWN');
-  const cls = status === 'ACTIVE' ? 'badge badge-success' : 'badge badge-muted';
-  return `<span class="${cls}">${safeStatus}</span>`;
+  const s = (status || '').toString();
+  const label = mapStatusLabel(s);
+  const cls = s === 'ACTIVE' ? 'badge badge-success' : 'badge badge-muted';
+  return `<span class="${cls}">${escapeHtml(label)}</span>`;
 }
 
 function getCategoryLabel(categoryId) {
   if (categoryId === null || categoryId === undefined || categoryId === '') return '-';
-  return categoryNameById[categoryId] || `Category #${categoryId}`;
+  return categoryNameById[categoryId] || `分類 #${categoryId}`;
 }
 
 function renderProductList(products) {
@@ -16,11 +22,11 @@ function renderProductList(products) {
   if (!list) return;
   list.innerHTML = '';
   if (!products) {
-    list.innerHTML = '<div class="empty-state">Failed to load products.</div>';
+    list.innerHTML = '<div class="empty-state">載入商品失敗。</div>';
     return;
   }
   if (products.length === 0) {
-    list.innerHTML = '<div class="empty-state">No active products found.</div>';
+    list.innerHTML = '<div class="empty-state">目前沒有商品。</div>';
     return;
   }
   products.forEach((p) => {
@@ -28,12 +34,15 @@ function renderProductList(products) {
     item.className = 'card product-card';
     item.tabIndex = 0;
     item.setAttribute('role', 'button');
-    item.setAttribute('aria-label', `Open product ${p.title}`);
+    item.setAttribute('aria-label', `查看商品 ${p.title}`);
+    const descHtml = p.description ? `<div class="product-desc">${escapeHtml(p.description)}</div>` : '';
+    const catHtml = p.categoryName ? `<div class="product-category">${escapeHtml(p.categoryName)}</div>` : '';
     item.innerHTML = `
       <div class="product-meta">#${escapeHtml(p.productId)}</div>
       <h3 class="product-title">${escapeHtml(p.title)}</h3>
-      <div class="product-price">${formatPrice(p.price)}</div>
-      <div class="actions">${getStatusBadge(p.status)}</div>
+      ${catHtml}
+      ${descHtml}
+      <div class="product-row"><div class="product-price">${formatPrice(p.price)}</div><div class="actions">${getStatusBadge(p.status)}</div></div>
     `;
     const openDetail = () => {
       window.location.href = `product-detail.html?id=${encodeURIComponent(p.productId)}`;
@@ -49,9 +58,9 @@ function renderProductList(products) {
 async function loadActiveProducts() {
   clearMessage();
   const list = document.getElementById('productList');
-  if (list) list.innerHTML = '<div class="empty-state">Loading products...</div>';
+  if (list) list.innerHTML = '<div class="empty-state">載入商品中…</div>';
   const result = await apiGet('/products');
-  if (!result.success) return showMessage(result.message || 'Load products failed.', true);
+  if (!result.success) return showMessage(result.message || '載入商品失敗。', true);
   renderProductList(result.data || []);
 }
 
@@ -70,10 +79,10 @@ async function populateCategorySelect() {
   const select = document.getElementById('categoryId');
   if (!select) return;
   select.disabled = true;
-  select.innerHTML = '<option value="">Loading categories...</option>';
+  select.innerHTML = '<option value="">載入分類中…</option>';
   const categories = await loadCategories();
   select.disabled = false;
-  select.innerHTML = '<option value="">Select category</option>';
+  select.innerHTML = '<option value="">請選擇分類</option>';
   categories.forEach((category) => {
     const option = document.createElement('option');
     option.value = category.categoryId;
@@ -81,7 +90,7 @@ async function populateCategorySelect() {
     select.appendChild(option);
   });
   if (!categories || categories.length === 0) {
-    select.innerHTML = '<option value="">No categories available</option>';
+    select.innerHTML = '<option value="">暫無分類</option>';
     select.disabled = true;
   }
 }
@@ -92,33 +101,34 @@ async function loadProductDetail() {
   clearMessage();
   await loadCategories();
   const id = getQueryParam('id');
-  if (!id) return showMessage('Missing product id.', true);
+  if (!id) return showMessage('找不到商品 ID。', true);
 
   const result = await apiGet(`/products/${encodeURIComponent(id)}`);
-  if (!result.success) return showMessage(result.message || 'Load detail failed.', true);
+  if (!result.success) return showMessage(result.message || '載入商品詳細失敗。', true);
 
   const p = result.data;
   detailArea.innerHTML = `
-    <div class="detail-card">
-      <div>
+    <div class="detail-layout">
+      <div class="detail-image" aria-hidden="true"></div>
+      <div class="detail-info">
         <div class="actions">${getStatusBadge(p.status)}</div>
         <h2 class="detail-title">${escapeHtml(p.title)}</h2>
         <div class="detail-price">${formatPrice(p.price)}</div>
+        <dl class="detail-list">
+          <div class="detail-row"><dt>商品描述</dt><dd>${escapeHtml(p.description || '無描述')}</dd></div>
+          <div class="detail-row"><dt>分類</dt><dd>${escapeHtml(getCategoryLabel(p.categoryId))}</dd></div>
+          <div class="detail-row"><dt>賣家</dt><dd>#${escapeHtml(p.sellerId)}</dd></div>
+          <div class="detail-row"><dt>狀態</dt><dd>${escapeHtml(mapStatusLabel(p.status))}</dd></div>
+          <div class="detail-row"><dt>搜尋次數</dt><dd>${escapeHtml(p.searchHitCount || 0)}</dd></div>
+        </dl>
       </div>
-      <dl class="detail-list">
-        <div class="detail-row"><dt>Description</dt><dd>${escapeHtml(p.description || 'No description')}</dd></div>
-        <div class="detail-row"><dt>Category</dt><dd>${escapeHtml(getCategoryLabel(p.categoryId))}</dd></div>
-        <div class="detail-row"><dt>Seller</dt><dd>#${escapeHtml(p.sellerId)}</dd></div>
-        <div class="detail-row"><dt>Status</dt><dd>${escapeHtml(p.status)}</dd></div>
-        <div class="detail-row"><dt>Search Hits</dt><dd>${escapeHtml(p.searchHitCount || 0)}</dd></div>
-      </dl>
     </div>
   `;
 
   const orderBtn = document.getElementById('orderBtn');
   if (orderBtn && p.status !== 'ACTIVE') {
     orderBtn.disabled = true;
-    orderBtn.textContent = 'Unavailable';
+    orderBtn.textContent = '無法下單';
     orderBtn.classList.add('btn-secondary');
   }
 }
@@ -134,9 +144,9 @@ async function handleAddProduct(event) {
   const categoryId = categoryIdRaw ? Number(categoryIdRaw) : null;
   const description = document.getElementById('description')?.value || '';
 
-  if (!title) return showMessage('Product title is required.', true);
-  if (!Number.isInteger(price) || price <= 0) return showMessage('Price must be a positive whole number.', true);
-  if (!categoryId) return showMessage('Please select a category.', true);
+  if (!title) return showMessage('請輸入商品標題。', true);
+  if (!Number.isInteger(price) || price <= 0) return showMessage('價格必須為正整數。', true);
+  if (!categoryId) return showMessage('請選擇分類。', true);
 
   const result = await apiPost('/products', {
     sellerId: loginUser.userId,
@@ -146,10 +156,10 @@ async function handleAddProduct(event) {
     description
   });
   if (result.success) {
-    showMessage('Product added successfully. Redirecting...', false);
+    showMessage('商品已新增，正在導向…', false);
     setTimeout(() => (window.location.href = 'home.html'), 700);
   } else {
-    showMessage(result.message || 'Add product failed.', true);
+    showMessage(result.message || '新增商品失敗。', true);
   }
 }
 

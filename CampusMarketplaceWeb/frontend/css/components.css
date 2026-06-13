@@ -1,8 +1,8 @@
 .card {
-  background: var(--color-surface, #ffffff);
-  border: 1px solid #dbe4f0;
-  border-radius: var(--radius-lg, 18px);
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  background: var(--surface-translucent, rgba(255,255,255,0.86));
+  border: 1px solid var(--color-border, #dbe4f0);
+  border-radius: var(--card-radius, 18px);
+  box-shadow: var(--card-shadow, 0 14px 40px rgba(15, 23, 42, 0.08));
 }
 
 .card-body {
@@ -14,12 +14,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 10px 16px;
   border: 0;
-  border-radius: 12px;
-  background: #e2e8f0;
-  color: #0f172a;
+  border-radius: 16px;
+  background: var(--btn-bg, #e2e8f0);
+  color: var(--color-text, #0f172a);
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -31,13 +31,29 @@
 }
 
 .btn-primary {
-  background: var(--color-primary, #2563eb);
+  background: linear-gradient(180deg, var(--color-primary, #3aa0f0), var(--color-primary-hover, #2b93e6));
   color: #ffffff;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
 }
 
 .btn-secondary {
-  background: #f1f5f9;
-  color: #334155;
+  background: rgba(255,255,255,0.9);
+  color: var(--color-text-muted, #334155);
+  border: 1px solid var(--color-border, #dbe4f0);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-muted);
+  padding: 8px 12px;
+}
+
+.btn-ghost.active,
+.tabs .tab.active {
+  background: rgba(37,99,235,0.08);
+  color: var(--color-primary-hover);
+  border-radius: 999px;
 }
 
 .btn-danger {
@@ -49,10 +65,10 @@
 .select,
 .textarea {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border, #cbd5e1);
   border-radius: 12px;
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #0f172a);
   outline: none;
   transition: border 0.15s ease, box-shadow 0.15s ease;
 }
@@ -78,7 +94,7 @@
 
 .form-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--gap, 16px);
 }
 
 .form-row {
@@ -127,9 +143,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: #e0f2fe;
+  background: #eaf6ff;
   color: #0369a1;
   font-size: 12px;
   font-weight: 800;
@@ -147,9 +163,10 @@
 }
 
 .empty-state {
-  padding: 30px;
-  border: 2px dashed #cbd5e1;
-  border-radius: 18px;
-  color: #64748b;
+  padding: 28px;
+  border: 1px dashed var(--color-border, #cbd5e1);
+  border-radius: var(--card-radius, 18px);
+  color: var(--color-text-muted, #64748b);
   text-align: center;
+  background: rgba(255,255,255,0.6);
 }

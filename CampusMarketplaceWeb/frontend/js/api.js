@@ -16,12 +16,12 @@ async function apiGet(path) {
     const payload = await safeParseJson(res);
     if (!res.ok) {
       if (payload && typeof payload.message === 'string') return { success: false, message: payload.message };
-      return { success: false, message: `API error: ${res.status}` };
+      return { success: false, message: `API 錯誤：${res.status}` };
     }
-    return payload ?? { success: false, message: 'Invalid JSON from server.' };
+    return payload ?? { success: false, message: '伺服器回傳無效的資料。' };
   } catch (error) {
     console.error('apiGet error', error);
-    return { success: false, message: 'Cannot connect to API server.' };
+    return { success: false, message: '無法連線到 API 伺服器。' };
   }
 }
 
@@ -35,11 +35,11 @@ async function apiPost(path, payload) {
     const data = await safeParseJson(res);
     if (!res.ok) {
       if (data && typeof data.message === 'string') return { success: false, message: data.message };
-      return { success: false, message: `API error: ${res.status}` };
+      return { success: false, message: `API 錯誤：${res.status}` };
     }
-    return data ?? { success: false, message: 'Invalid JSON from server.' };
+    return data ?? { success: false, message: '伺服器回傳無效的資料。' };
   } catch (error) {
     console.error('apiPost error', error);
-    return { success: false, message: 'Cannot connect to API server.' };
+    return { success: false, message: '無法連線到 API 伺服器。' };
   }
 }
