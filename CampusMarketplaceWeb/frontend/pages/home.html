@@ -15,10 +15,15 @@
       <div class="container navbar-inner">
         <a class="brand" href="home.html"><span class="brand-mark">CM</span><span>Campus Marketplace</span></a>
         <div class="nav-links">
-          <a class="nav-link" href="add-product.html">Add Product</a>
-          <a class="nav-link" href="my-orders.html">My Orders</a>
-          <span id="navUser" class="nav-user"></span>
-          <span id="navAuth"></span>
+          <!-- Navbar managed by js/navbar.js: fixed IDs, toggle with .hidden -->
+          <a id="navHome" class="nav-link" href="home.html">Home</a>
+          <a id="navAddProduct" class="nav-link" href="add-product.html" hidden>Add Product</a>
+          <a id="navMyProducts" class="nav-link" href="my-products.html" hidden>My Products</a>
+          <a id="navMyOrders" class="nav-link" href="my-orders.html" hidden>My Orders</a>
+          <span id="navGuest" class="nav-user">Guest</span>
+          <span id="navUsername" class="nav-user" hidden></span>
+          <a id="navLoginRegister" class="nav-link" href="login.html">Login / Register</a>
+          <button id="navLogout" class="btn btn-danger" type="button" hidden>Logout</button>
         </div>
       </div>
     </nav>

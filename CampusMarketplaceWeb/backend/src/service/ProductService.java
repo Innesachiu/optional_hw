@@ -93,6 +93,33 @@ public class ProductService {
         }
     }
 
+    /**
+     * Gets products by seller id.
+     *
+     * @param sellerId seller id
+     * @return product detail response list
+     */
+    public List<ProductDetailResponse> getProductsBySellerId(int sellerId) {
+        if (sellerId <= 0) {
+            throw new ValidationException("invalid sellerId");
+        }
+        List<Product> list = productDAO.findBySellerId(sellerId);
+        List<ProductDetailResponse> result = new ArrayList<>();
+        for (Product p : list) {
+            ProductDetailResponse r = new ProductDetailResponse();
+            r.setProductId(p.getProductId());
+            r.setTitle(p.getTitle());
+            r.setPrice(p.getPrice());
+            r.setStatus(p.getStatus());
+            r.setSellerId(p.getSellerId());
+            r.setCategoryId(p.getCategoryId());
+            r.setDescription(p.getDescription());
+            r.setSearchHitCount(p.getSearchHitCount());
+            result.add(r);
+        }
+        return result;
+    }
+
     private List<ProductResponse> toProductResponseList(List<Product> products) {
         List<ProductResponse> list = new ArrayList<>();
         for (Product p : products) {

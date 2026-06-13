@@ -29,7 +29,14 @@ public final class JsonUtil {
      * @return json string
      */
     public static String toJson(ApiResponse response) {
-        return "{\"success\":" + response.isSuccess() + ",\"message\":\"" + escape(response.getMessage()) + "\"}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"success\":").append(response.isSuccess());
+        sb.append(",\"message\":\"").append(escape(response.getMessage())).append("\"");
+        if (response.getData() != null) {
+            sb.append(",\"data\":").append(response.getData());
+        }
+        sb.append('}');
+        return sb.toString();
     }
 
     /**

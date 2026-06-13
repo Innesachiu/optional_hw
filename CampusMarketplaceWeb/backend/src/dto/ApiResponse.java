@@ -6,6 +6,7 @@ package dto;
 public class ApiResponse {
     private boolean success;
     private String message;
+    private String data;
 
     /** Default constructor. */
     public ApiResponse() {}
@@ -19,6 +20,11 @@ public class ApiResponse {
         this.success = success;
         this.message = message;
     }
+
+    /** @return data JSON fragment or null */
+    public String getData() { return data; }
+    /** @param data JSON fragment string */
+    public void setData(String data) { this.data = data; }
 
     /** @return success */
     public boolean isSuccess() { return success; }

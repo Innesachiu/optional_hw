@@ -6,6 +6,7 @@ import dto.RegisterRequest;
 import exception.AppException;
 import model.User;
 import service.AuthService;
+import util.JsonUtil;
 
 /**
  * Controller for auth APIs.
@@ -37,7 +38,10 @@ public class AuthController {
     public ApiResponse login(LoginRequest request) {
         try {
             User user = authService.login(request);
-            return new ApiResponse(true, "login success: " + user.getUsername());
+            ApiResponse resp = new ApiResponse(true, "Login successful");
+            String dataJson = "{\"userId\":" + user.getUserId() + ",\"username\":\"" + JsonUtil.escape(user.getUsername()) + "\"}";
+            resp.setData(dataJson);
+            return resp;
         } catch (AppException e) {
             return new ApiResponse(false, e.getMessage());
         }

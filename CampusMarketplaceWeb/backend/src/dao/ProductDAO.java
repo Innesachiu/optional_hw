@@ -57,6 +57,28 @@ public class ProductDAO {
         return list;
     }
 
+        /**
+         * Finds products by seller id (all statuses).
+         *
+         * @param sellerId seller id
+         * @return product list
+         */
+        public List<Product> findBySellerId(int sellerId) {
+            List<Product> list = new ArrayList<>();
+            String sql = "SELECT product_id,seller_id,category_id,title,price,description,status,search_hit_count,created_at FROM products WHERE seller_id=? ORDER BY product_id DESC";
+            try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, sellerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(map(rs));
+                    }
+                }
+            } catch (SQLException e) {
+                return list;
+            }
+            return list;
+        }
+
     /**
      * Finds one product by id.
      *

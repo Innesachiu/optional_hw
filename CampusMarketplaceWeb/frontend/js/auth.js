@@ -18,15 +18,16 @@ async function handleLogin(event) {
   }
   const result = await apiPost('/auth/login', { username, password });
   if (result.success) {
-    // Store username. Only store userId if backend returns it.
-    localStorage.setItem('username', username);
-    // backend may return userId either at top-level or inside data
-    const returnedUserId = result.userId ?? (result.data && result.data.userId) ?? null;
-    if (returnedUserId != null) {
-      localStorage.setItem('userId', String(returnedUserId));
+    const user = result.data;
+    if (user && user.userId && user.username) {
+      localStorage.setItem('userId', String(user.userId));
+      localStorage.setItem('username', user.username);
+      if (typeof renderNavState === 'function') renderNavState();
+      showMessage('Login success. Redirecting...', false);
+      setTimeout(() => (window.location.href = 'home.html'), 450);
+    } else {
+      showMessage('登入成功，但伺服器沒有回傳使用者資料。', true);
     }
-    showMessage('Login success. Redirecting...', false);
-    setTimeout(() => (window.location.href = 'home.html'), 450);
   } else {
     showMessage(result.message || 'Login failed.', true);
   }
@@ -84,44 +85,12 @@ async function handleRegister(event) {
 function handleLogout() {
   localStorage.removeItem('userId');
   localStorage.removeItem('username');
+  if (typeof renderNavState === 'function') renderNavState();
   window.location.href = 'login.html';
 }
 
-/**
- * Updates nav state based on login status.
- * Expects optional elements: #navAuth, #navUser, .logout-btn
- */
-function renderNavState() {
-  const userId = localStorage.getItem('userId');
-  const username = localStorage.getItem('username') || '';
-  const navAuth = document.getElementById('navAuth');
-  const navUser = document.getElementById('navUser');
-
-  if (userId) {
-    if (navUser) navUser.textContent = `Hi, ${username || 'student'}`;
-    if (navAuth) {
-      navAuth.innerHTML = '';
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn btn-danger logout-btn';
-      btn.textContent = 'Logout';
-      navAuth.appendChild(btn);
-    }
-  } else {
-    if (navUser) navUser.textContent = 'Guest';
-    if (navAuth) {
-      navAuth.innerHTML = '';
-      const a1 = document.createElement('a'); a1.href = 'login.html'; a1.textContent = 'Login';
-      const sep = document.createTextNode(' / ');
-      const a2 = document.createElement('a'); a2.href = 'register.html'; a2.textContent = 'Register';
-      navAuth.appendChild(a1); navAuth.appendChild(sep); navAuth.appendChild(a2);
-    }
-  }
-
-  document.querySelectorAll('.logout-btn').forEach((btn) => {
-    btn.onclick = handleLogout;
-  });
-}
+// Note: navbar rendering is handled centrally in `navbar.js` to avoid
+// duplicative DOM insertion. This file keeps auth actions only.
 
 (function bindAuthPage() {
   document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
@@ -132,7 +101,6 @@ function renderNavState() {
   document.getElementById('registerBtn')?.addEventListener('click', (event) => {
     if (!document.getElementById('registerForm')) handleRegister(event);
   });
-  renderNavState();
   // If already logged in, visiting login/register should go to home
   const userId = localStorage.getItem('userId');
   const isAuthPage = window.location.pathname.endsWith('/login.html') || window.location.pathname.endsWith('/register.html');

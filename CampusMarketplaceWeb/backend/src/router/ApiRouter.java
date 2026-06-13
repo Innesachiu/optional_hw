@@ -67,6 +67,9 @@ public class ApiRouter implements HttpHandler {
             if ("/api/products/search".equals(path)) {
                 handleSearchProducts(exchange); return;
             }
+            if ("/api/products/my".equals(path)) {
+                handleMyProducts(exchange); return;
+            }
             if (path.startsWith("/api/products/")) {
                 handleProductDetail(exchange, path); return;
             }
@@ -158,6 +161,25 @@ public class ApiRouter implements HttpHandler {
         ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(sb.toString()));
     }
 
+    private void handleMyProducts(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "GET")) { HttpUtil.methodNotAllowed(exchange); return; }
+        Map<String, String> q = RequestUtil.parseQuery(exchange.getRequestURI().getQuery());
+        String sid = q.get("sellerId");
+        int sellerId;
+        try {
+            sellerId = Integer.parseInt(sid == null ? "0" : sid);
+        } catch (NumberFormatException e) {
+            ResponseUtil.sendJson(exchange, 200, JsonUtil.fail("Invalid sellerId"));
+            return;
+        }
+        if (sellerId <= 0) {
+            ResponseUtil.sendJson(exchange, 200, JsonUtil.fail("Invalid sellerId"));
+            return;
+        }
+        List<ProductDetailResponse> products = productController.getMyProducts(sellerId);
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(toProductsFullJson(products)));
+    }
+
     private void handleOrders(HttpExchange exchange) throws IOException {
         if (!HttpUtil.isMethod(exchange, "POST")) { HttpUtil.methodNotAllowed(exchange); return; }
         String body = RequestUtil.readBody(exchange);
@@ -196,6 +218,25 @@ public class ApiRouter implements HttpHandler {
                     .append(",\"title\":\"").append(JsonUtil.escape(p.getTitle()))
                     .append("\",\"price\":").append(p.getPrice())
                     .append(",\"status\":\"").append(JsonUtil.escape(p.getStatus())).append("\"}");
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private String toProductsFullJson(List<ProductDetailResponse> products) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < products.size(); i++) {
+            ProductDetailResponse p = products.get(i);
+            if (i > 0) sb.append(',');
+            sb.append('{')
+                    .append("\"productId\":").append(p.getProductId())
+                    .append(",\"title\":\"").append(JsonUtil.escape(p.getTitle())).append("\"")
+                    .append(",\"price\":").append(p.getPrice())
+                    .append(",\"status\":\"").append(JsonUtil.escape(p.getStatus())).append("\"")
+                    .append(",\"sellerId\":").append(p.getSellerId())
+                    .append(",\"categoryId\":").append(p.getCategoryId() == null ? "null" : p.getCategoryId())
+                    .append(",\"description\":\"").append(JsonUtil.escape(p.getDescription())).append("\"")
+                    .append('}');
         }
         sb.append(']');
         return sb.toString();

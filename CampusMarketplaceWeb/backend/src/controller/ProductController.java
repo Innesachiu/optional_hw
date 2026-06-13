@@ -64,4 +64,18 @@ public class ProductController {
             return new ApiResponse(false, e.getMessage());
         }
     }
+
+    /**
+     * Handles GET /api/products/my?sellerId=xxx
+     *
+     * @param sellerId seller id
+     * @return product detail list
+     */
+    public List<ProductDetailResponse> getMyProducts(int sellerId) {
+        try {
+            return productService.getProductsBySellerId(sellerId);
+        } catch (AppException e) {
+            return Collections.emptyList();
+        }
+    }
 }
