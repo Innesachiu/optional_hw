@@ -20,9 +20,9 @@ public class ProductDAO {
      * @param product product data
      * @return true if inserted
      */
-    public boolean create(Product product) {
+    public int create(Product product) {
         String sql = "INSERT INTO products(seller_id,category_id,title,price,description,status) VALUES(?,?,?,?,?,'ACTIVE')";
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, product.getSellerId());
             if (product.getCategoryId() == null) {
                 ps.setNull(2, java.sql.Types.INTEGER);
@@ -32,10 +32,15 @@ public class ProductDAO {
             ps.setString(3, product.getTitle());
             ps.setInt(4, product.getPrice());
             ps.setString(5, product.getDescription());
-            return ps.executeUpdate() > 0;
+            int affected = ps.executeUpdate();
+            if (affected == 0) return -1;
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+            return -1;
         } catch (SQLException e){
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 

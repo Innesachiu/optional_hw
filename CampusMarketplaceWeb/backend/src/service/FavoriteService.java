@@ -2,6 +2,7 @@ package service;
 
 import dao.FavoriteDAO;
 import dao.ProductDAO;
+import dao.ProductImageDAO;
 import dto.ProductResponse;
 import exception.AppException;
 import model.Product;
@@ -15,6 +16,7 @@ import java.util.List;
 public class FavoriteService {
     private final FavoriteDAO favoriteDAO = new FavoriteDAO();
     private final ProductDAO productDAO = new ProductDAO();
+    private final ProductImageDAO productImageDAO = new ProductImageDAO();
 
     public boolean addFavorite(int userId, int productId) throws AppException {
         if (userId <= 0 || productId <= 0) throw new AppException("Invalid userId or productId");
@@ -45,6 +47,7 @@ public class FavoriteService {
             ProductResponse r = new ProductResponse();
             r.setProductId(p.getProductId());
             r.setTitle(p.getTitle());
+            r.setImageUrl(productImageDAO.findPrimaryImageUrl(p.getProductId()));
             r.setPrice(p.getPrice());
             r.setStatus(p.getStatus());
             out.add(r);

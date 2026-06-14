@@ -6,6 +6,7 @@ import controller.AuthController;
 import controller.CategoryController;
 import controller.OrderController;
 import controller.ProductController;
+import controller.ProductImageController;
 import controller.SearchController;
 import controller.FavoriteController;
 import dto.AddProductRequest;
@@ -14,6 +15,7 @@ import dto.OrderRequest;
 import dto.OrderResponse;
 import dto.ProductDetailResponse;
 import dto.ProductResponse;
+import dto.ApiResponse;
 import dto.RegisterRequest;
 import exception.AppException;
 import filter.CorsFilter;
@@ -33,6 +35,7 @@ import java.util.Map;
 public class ApiRouter implements HttpHandler {
     private final AuthController authController = new AuthController();
     private final ProductController productController = new ProductController();
+    private final ProductImageController productImageController = new ProductImageController();
     private final CategoryController categoryController = new CategoryController();
     private final SearchController searchController = new SearchController();
     private final OrderController orderController = new OrderController();
@@ -57,6 +60,9 @@ public class ApiRouter implements HttpHandler {
             if ("/api/auth/register".equals(path)) {
                 handleRegister(exchange); return;
             }
+            if (path.startsWith("/api/product-images/")) {
+                handleProductImageServe(exchange, path); return;
+            }
             if ("/api/auth/login".equals(path)) {
                 handleLogin(exchange); return;
             }
@@ -65,6 +71,9 @@ public class ApiRouter implements HttpHandler {
             }
             if ("/api/products".equals(path) && HttpUtil.isMethod(exchange, "POST")) {
                 handleAddProduct(exchange); return;
+            }
+            if ("/api/products/image".equals(path) && HttpUtil.isMethod(exchange, "POST")) {
+                handleUploadProductImage(exchange); return;
             }
             if ("/api/products/search".equals(path)) {
                 handleSearchProducts(exchange); return;
@@ -144,10 +153,11 @@ public class ApiRouter implements HttpHandler {
         String idPart = path.substring("/api/products/".length());
         int id = Integer.parseInt(idPart);
         ProductDetailResponse detail = productController.getProductDetail(id);
+        String imgPart = detail.getImageUrl() == null ? "null" : "\"" + JsonUtil.escape(detail.getImageUrl()) + "\"";
         String json = "{\"productId\":" + detail.getProductId() + ",\"title\":\"" + JsonUtil.escape(detail.getTitle()) +
-                "\",\"price\":" + detail.getPrice() + ",\"status\":\"" + JsonUtil.escape(detail.getStatus()) +
-                "\",\"sellerId\":" + detail.getSellerId() + ",\"categoryId\":" + (detail.getCategoryId()==null?"null":detail.getCategoryId()) +
-                ",\"description\":\"" + JsonUtil.escape(detail.getDescription()) + "\",\"searchHitCount\":" + detail.getSearchHitCount() + "}";
+            "\",\"price\":" + detail.getPrice() + ",\"status\":\"" + JsonUtil.escape(detail.getStatus()) +
+            "\",\"imageUrl\":" + imgPart + ",\"sellerId\":" + detail.getSellerId() + ",\"categoryId\":" + (detail.getCategoryId()==null?"null":detail.getCategoryId()) +
+            ",\"description\":\"" + JsonUtil.escape(detail.getDescription()) + "\",\"searchHitCount\":" + detail.getSearchHitCount() + "}";
         ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(json));
     }
 
@@ -263,7 +273,10 @@ public class ApiRouter implements HttpHandler {
             sb.append("{\"productId\":").append(p.getProductId())
                     .append(",\"title\":\"").append(JsonUtil.escape(p.getTitle()))
                     .append("\",\"price\":").append(p.getPrice())
-                    .append(",\"status\":\"").append(JsonUtil.escape(p.getStatus())).append("\"}");
+                    .append(",\"status\":\"").append(JsonUtil.escape(p.getStatus())).append("\"")
+                    .append(",\"imageUrl\":")
+                    .append(p.getImageUrl() == null ? "null" : ("\"" + JsonUtil.escape(p.getImageUrl()) + "\""))
+                    .append("}");
         }
         sb.append(']');
         return sb.toString();
@@ -279,6 +292,8 @@ public class ApiRouter implements HttpHandler {
                     .append(",\"title\":\"").append(JsonUtil.escape(p.getTitle())).append("\"")
                     .append(",\"price\":").append(p.getPrice())
                     .append(",\"status\":\"").append(JsonUtil.escape(p.getStatus())).append("\"")
+                    .append(",\"imageUrl\":")
+                    .append(p.getImageUrl() == null ? "null" : ("\"" + JsonUtil.escape(p.getImageUrl()) + "\""))
                     .append(",\"sellerId\":").append(p.getSellerId())
                     .append(",\"categoryId\":").append(p.getCategoryId() == null ? "null" : p.getCategoryId())
                     .append(",\"description\":\"").append(JsonUtil.escape(p.getDescription())).append("\"")
@@ -286,6 +301,34 @@ public class ApiRouter implements HttpHandler {
         }
         sb.append(']');
         return sb.toString();
+    }
+
+    private void handleUploadProductImage(HttpExchange exchange) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "POST")) { HttpUtil.methodNotAllowed(exchange); return; }
+        String body = RequestUtil.readBody(exchange);
+        int productId = defaultInt(RequestUtil.getJsonInt(body, "productId"), 0);
+        String fileName = RequestUtil.getJsonString(body, "fileName");
+        String mimeType = RequestUtil.getJsonString(body, "mimeType");
+        String base64Data = RequestUtil.getJsonString(body, "base64Data");
+        ApiResponse resp = productImageController.uploadImage(productId, fileName, mimeType, base64Data);
+        ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(resp));
+    }
+
+    private void handleProductImageServe(HttpExchange exchange, String path) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "GET")) { HttpUtil.methodNotAllowed(exchange); return; }
+        String fileName = path.substring("/api/product-images/".length());
+        if (fileName.contains("..") || fileName.contains("/")) { ResponseUtil.sendJson(exchange, 404, JsonUtil.fail("not found")); return; }
+        java.io.File f = new java.io.File("uploads/products", fileName);
+        if (!f.exists() || !f.isFile()) { ResponseUtil.sendJson(exchange, 404, JsonUtil.fail("not found")); return; }
+        String lower = fileName.toLowerCase();
+        String ct = "application/octet-stream";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) ct = "image/jpeg";
+        else if (lower.endsWith(".png")) ct = "image/png";
+        else if (lower.endsWith(".webp")) ct = "image/webp";
+        exchange.getResponseHeaders().set("Content-Type", ct);
+        byte[] data = java.nio.file.Files.readAllBytes(f.toPath());
+        exchange.sendResponseHeaders(200, data.length);
+        try (java.io.OutputStream os = exchange.getResponseBody()) { os.write(data); }
     }
 
     private String toOrdersJson(List<OrderResponse> orders) {

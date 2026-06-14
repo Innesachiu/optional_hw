@@ -227,6 +227,14 @@ function renderProductList(products) {
       ${descHtml}
       <div class="product-row"><div class="product-price">${formatPrice(p.price)}</div><div class="actions">${getStatusBadge(p.status)}</div></div>
     `;
+    // image element
+    const imgEl = document.createElement('img');
+    const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="100%" height="100%" fill="%23f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888888" font-size="14">No Image</text></svg>';
+    imgEl.className = 'product-thumb';
+    imgEl.alt = p.title || 'product image';
+    imgEl.src = p.imageUrl ? resolveImageUrl(p.imageUrl) : placeholder;
+    imgEl.onerror = function() { this.onerror = null; this.src = placeholder; };
+    item.insertBefore(imgEl, item.firstChild);
     const openDetail = () => {
       window.location.href = `product-detail.html?id=${encodeURIComponent(p.productId)}`;
     };
@@ -356,6 +364,18 @@ async function loadProductDetail() {
       </div>
     </div>
   `;
+
+  // set product image in detail view
+  const detailImageEl = detailArea.querySelector('.detail-image');
+  if (detailImageEl) {
+    const img = document.createElement('img');
+    const placeholder = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><rect width="100%" height="100%" fill="%23f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888888" font-size="24">No Image</text></svg>';
+    img.alt = p.title || 'product image';
+    img.src = p.imageUrl ? resolveImageUrl(p.imageUrl) : placeholder;
+    img.onerror = function() { this.onerror = null; this.src = placeholder; };
+    detailImageEl.innerHTML = '';
+    detailImageEl.appendChild(img);
+  }
 
   // notify other modules that product detail has loaded
   try {
@@ -503,18 +523,81 @@ async function handleAddProduct(event) {
   if (!Number.isInteger(price) || price <= 0) return showMessage('價格必須為正整數。', true);
   if (!categoryId) return showMessage('請選擇分類。', true);
 
-  const result = await apiPost('/products', {
+  const createResult = await apiPost('/products', {
     sellerId: loginUser.userId,
     categoryId,
     title,
     price,
     description
   });
-  if (result.success) {
-    showMessage('商品已新增，正在導向…', false);
+  console.log('create product response:', createResult);
+  if (!createResult || !createResult.success) return showMessage((createResult && createResult.message) || '新增商品失敗。', true);
+
+  // robustly extract productId from possible response shapes
+  const productId = createResult?.data?.productId ?? createResult?.productId ?? createResult?.data?.id ?? createResult?.id ?? null;
+  if (!productId) {
+    showMessage('商品已建立，但無法取得商品 ID，因此圖片未上傳。', true);
+    return;
+  }
+
+  // re-get selected image (do not rely on previously cached variables)
+  const imageInput = document.getElementById('product-image');
+  const selectedImage = imageInput?.files?.[0] || null;
+  console.log({ selectedImage, productId, mimeType: selectedImage?.type, size: selectedImage?.size });
+
+  if (!selectedImage) {
+    showMessage('商品已上架。', false);
     setTimeout(() => (window.location.href = 'home.html'), 700);
-  } else {
-    showMessage(result.message || '新增商品失敗。', true);
+    return;
+  }
+
+  // validate type and size
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!allowed.includes(selectedImage.type)) {
+    showMessage('商品已成功上架，但圖片格式不支援。', true);
+    return;
+  }
+  if (selectedImage.size > 3 * 1024 * 1024) {
+    showMessage('商品已成功上架，但圖片超過 3MB。', true);
+    return;
+  }
+
+  // helper: file -> pure base64
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || '');
+        const commaIndex = result.indexOf(',');
+        resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
+      };
+      reader.onerror = () => reject(new Error('圖片讀取失敗。'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // convert and upload
+  try {
+    const base64Data = await fileToBase64(selectedImage);
+    console.log('upload payload preview', { productId: Number(productId), fileName: selectedImage.name, mimeType: selectedImage.type, base64Len: base64Data.length });
+    const imageResult = await apiPost('/products/image', {
+      productId: Number(productId),
+      fileName: selectedImage.name,
+      mimeType: selectedImage.type,
+      base64Data
+    });
+    console.log('upload image response:', imageResult);
+    if (!imageResult || !imageResult.success) {
+      showMessage(imageResult?.message || '商品已建立，但圖片上傳失敗。', true);
+      return;
+    }
+    showMessage('商品與圖片已上架完成。', false);
+    // only clear input and navigate after successful upload
+    try { imageInput.value = ''; } catch (e) {}
+    setTimeout(() => (window.location.href = 'home.html'), 700);
+  } catch (e) {
+    console.error('image upload error', e);
+    showMessage('商品已建立，但圖片上傳過程發生錯誤。', true);
   }
 }
 
@@ -545,6 +628,36 @@ async function handleAddProduct(event) {
       return;
     }
     populateCategorySelect();
+  }
+  // bind image input preview on add-product page
+  const imgInput = document.getElementById('product-image');
+  const imgPreview = document.getElementById('product-image-preview');
+  const imgRemove = document.getElementById('product-image-remove');
+  if (imgInput) {
+    imgInput.addEventListener('change', (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (!f) { imgPreview.innerHTML = ''; imgRemove.hidden = true; return; }
+      const allowed = ['image/jpeg','image/png','image/webp'];
+      if (!allowed.includes(f.type) || f.size > 3*1024*1024) {
+        imgPreview.innerHTML = '<div class="image-preview">不支援的圖片或檔案過大</div>';
+        imgRemove.hidden = false;
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imgPreview.innerHTML = '';
+        const im = document.createElement('img');
+        im.src = e.target.result;
+        imgPreview.appendChild(im);
+        imgRemove.hidden = false;
+      };
+      reader.readAsDataURL(f);
+    });
+    imgRemove?.addEventListener('click', () => {
+      imgInput.value = '';
+      imgPreview.innerHTML = '';
+      imgRemove.hidden = true;
+    });
   }
   document.getElementById('addProductForm')?.addEventListener('submit', handleAddProduct);
 })();

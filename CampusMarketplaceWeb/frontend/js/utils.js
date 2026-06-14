@@ -66,3 +66,14 @@ function requireLogin() {
     username: localStorage.getItem('username') || ''
   };
 }
+
+/**
+ * Resolve API image url to absolute URL used by the app.
+ */
+function resolveImageUrl(imageUrl) {
+  if (!imageUrl) return '';
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+  return `${window.location.protocol}//${window.location.hostname}:2026${imageUrl}`;
+}
+
+window.resolveImageUrl = resolveImageUrl;

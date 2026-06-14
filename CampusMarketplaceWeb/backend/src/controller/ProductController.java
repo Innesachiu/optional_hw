@@ -58,8 +58,10 @@ public class ProductController {
      */
     public ApiResponse addProduct(AddProductRequest request) {
         try {
-            productService.addProduct(request);
-            return new ApiResponse(true, "product added");
+            int productId = productService.addProduct(request);
+            ApiResponse resp = new ApiResponse(true, "商品上架成功。");
+            resp.setData("{\"productId\":" + productId + "}");
+            return resp;
         } catch (AppException e) {
             return new ApiResponse(false, e.getMessage());
         }

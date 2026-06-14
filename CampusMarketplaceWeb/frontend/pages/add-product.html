@@ -56,6 +56,14 @@
               <label for="description">描述</label>
               <textarea id="description" class="textarea" placeholder="描述商品狀況、取貨方式與注意事項"></textarea>
             </div>
+            <div class="form-row">
+              <label for="product-image">商品照片</label>
+              <div class="image-input">
+                <input id="product-image" type="file" accept="image/jpeg,image/png,image/webp">
+                <div id="product-image-preview" class="image-preview" aria-hidden="true"></div>
+                <button id="product-image-remove" type="button" class="btn btn-secondary" hidden>移除照片</button>
+              </div>
+            </div>
             <div class="actions">
               <button id="addProductBtn" class="btn btn-primary" type="submit">確認上架</button>
               <a class="btn btn-secondary" href="home.html">回首頁</a>

@@ -15,6 +15,7 @@ public class Product {
     private String status;
     private int searchHitCount;
     private Timestamp createdAt;
+    private String imageUrl;
 
     /** Default constructor. */
     public Product() {}
@@ -54,4 +55,8 @@ public class Product {
     public Timestamp getCreatedAt() { return createdAt; }
     /** @param createdAt created time */
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    /** @return image url */
+    public String getImageUrl() { return imageUrl; }
+    /** @param imageUrl image url */
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

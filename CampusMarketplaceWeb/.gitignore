@@ -1,0 +1,5 @@
+uploads/products/*
+!uploads/products/.gitkeep
+backend/server.log
+backend/out/
+.DS_Store

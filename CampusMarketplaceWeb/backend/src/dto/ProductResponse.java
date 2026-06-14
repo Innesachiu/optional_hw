@@ -8,6 +8,7 @@ public class ProductResponse {
     private String title;
     private int price;
     private String status;
+    private String imageUrl;
 
     /** Default constructor. */
     public ProductResponse() {}
@@ -27,4 +28,8 @@ public class ProductResponse {
     public String getStatus() { return status; }
     /** @param status status */
     public void setStatus(String status) { this.status = status; }
+    /** @return image url */
+    public String getImageUrl() { return imageUrl; }
+    /** @param imageUrl image url */
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

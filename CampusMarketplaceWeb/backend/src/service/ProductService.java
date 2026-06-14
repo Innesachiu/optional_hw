@@ -2,6 +2,7 @@ package service;
 
 import dao.CategoryDAO;
 import dao.ProductDAO;
+import dao.ProductImageDAO;
 import dto.AddProductRequest;
 import dto.ProductDetailResponse;
 import dto.ProductResponse;
@@ -19,6 +20,7 @@ import java.util.List;
  */
 public class ProductService {
     private final ProductDAO productDAO = new ProductDAO();
+    private final ProductImageDAO productImageDAO = new ProductImageDAO();
     private final SearchService searchService = new SearchService();
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
@@ -66,6 +68,7 @@ public class ProductService {
         response.setTitle(product.getTitle());
         response.setPrice(product.getPrice());
         response.setStatus(product.getStatus());
+        response.setImageUrl(productImageDAO.findPrimaryImageUrl(product.getProductId()));
         response.setSellerId(product.getSellerId());
         response.setCategoryId(product.getCategoryId());
         response.setDescription(product.getDescription());
@@ -78,7 +81,7 @@ public class ProductService {
      *
      * @param request add product request
      */
-    public void addProduct(AddProductRequest request) {
+    public int addProduct(AddProductRequest request) {
         if (request == null || request.getSellerId() <= 0 || request.getPrice() <= 0 || isBlank(request.getTitle())) {
             throw new ValidationException("invalid product request");
         }
@@ -88,9 +91,11 @@ public class ProductService {
         product.setTitle(request.getTitle().trim());
         product.setPrice(request.getPrice());
         product.setDescription(request.getDescription());
-        if (!productDAO.create(product)) {
+        int productId = productDAO.create(product);
+        if (productId <= 0) {
             throw new DatabaseException("failed to add product");
         }
+        return productId;
     }
 
     /**
@@ -109,6 +114,7 @@ public class ProductService {
             ProductDetailResponse r = new ProductDetailResponse();
             r.setProductId(p.getProductId());
             r.setTitle(p.getTitle());
+            r.setImageUrl(productImageDAO.findPrimaryImageUrl(p.getProductId()));
             r.setPrice(p.getPrice());
             r.setStatus(p.getStatus());
             r.setSellerId(p.getSellerId());
@@ -126,6 +132,7 @@ public class ProductService {
             ProductResponse r = new ProductResponse();
             r.setProductId(p.getProductId());
             r.setTitle(p.getTitle());
+            r.setImageUrl(productImageDAO.findPrimaryImageUrl(p.getProductId()));
             r.setPrice(p.getPrice());
             r.setStatus(p.getStatus());
             list.add(r);
