@@ -16,7 +16,12 @@
 
     if (addProduct) addProduct.hidden = !isLoggedIn;
     if (myProducts) myProducts.hidden = !isLoggedIn;
-    if (favorites) favorites.hidden = !isLoggedIn;
+    if (favorites) {
+      favorites.hidden = false;
+      favorites.href = 'my-favorites.html';
+      favorites.style.pointerEvents = 'auto';
+      favorites.style.cursor = 'pointer';
+    }
     if (myOrders) myOrders.hidden = !isLoggedIn;
     if (logout) logout.hidden = !isLoggedIn;
 
