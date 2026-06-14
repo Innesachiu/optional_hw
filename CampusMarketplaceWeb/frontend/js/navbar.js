@@ -72,7 +72,8 @@
   document.addEventListener('keydown', (ev)=>{
     if (ev.key === 'Escape') {
       const active = document.activeElement;
-      if (active && active.classList && active.classList.contains('keyword-chip')) {
+      // focus blur for new hot-keyword items
+      if (active && active.classList && active.classList.contains('hk-item')) {
         active.blur();
       }
     }

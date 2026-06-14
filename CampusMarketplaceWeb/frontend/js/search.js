@@ -35,19 +35,41 @@ async function loadHotKeywords() {
     target.innerHTML = '<div class="empty-state">暫無熱門關鍵字。</div>';
     return;
   }
-  // render parsed keywords (now objects with { keyword, count })
-  (window.currentHotKeywords || []).forEach((item) => {
-    const btn = document.createElement('button');
-    btn.className = 'keyword-chip';
-    btn.type = 'button';
-    btn.textContent = `${item.keyword} (${item.count})`;
-    btn.addEventListener('click', () => {
+  // render top-5 leaderboard (vertical)
+  const parsed = (window.currentHotKeywords || []).slice();
+  parsed.sort((a, b) => (b.count || 0) - (a.count || 0));
+  const top = parsed.slice(0, 5);
+  const leaderboard = document.createElement('div');
+  leaderboard.className = 'hk-list';
+  top.forEach((item, idx) => {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'hk-item';
+    // left: rank badge
+    const rank = document.createElement('span');
+    rank.className = 'hk-rank';
+    rank.textContent = String(idx + 1);
+    // middle: keyword text
+    const kw = document.createElement('span');
+    kw.className = 'hk-keyword';
+    kw.textContent = String(item.keyword || '');
+    // right: count
+    const cnt = document.createElement('span');
+    cnt.className = 'hk-count';
+    cnt.textContent = String((item.count || 0) + ' 次');
+
+    row.appendChild(rank);
+    row.appendChild(kw);
+    row.appendChild(cnt);
+
+    row.addEventListener('click', () => {
       const input = document.getElementById('keyword');
       if (input) input.value = item.keyword;
       searchProducts();
     });
-    target.appendChild(btn);
+    leaderboard.appendChild(row);
   });
+  target.appendChild(leaderboard);
   // If user currently has 'popular' selected, re-render sorted products without calling API
   if (document.getElementById('product-sort')?.value === 'popular') {
     window.renderSortedProducts?.();
