@@ -61,16 +61,17 @@
 
     // check current state
     btn.disabled = true;
-    const state = await checkFavorited(userId, productId);
+    let state = await checkFavorited(userId, productId);
     if (!state.success) {
-      btn.disabled = false;
-      return showMessage('無法載入收藏狀態。', true);
+      state = { success: true, favorited: false };
+      showMessage('目前先視為尚未收藏。', false);
     }
     await updateButtonState(btn, state.favorited);
 
     let busy = false;
     btn.addEventListener('click', async (ev) => {
       ev.preventDefault();
+      ev.stopPropagation();
       if (busy) return;
       busy = true;
       btn.disabled = true;
