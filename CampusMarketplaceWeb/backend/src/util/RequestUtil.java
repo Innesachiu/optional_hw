@@ -68,10 +68,31 @@ public final class RequestUtil {
         int idx = json.indexOf(pattern);
         if (idx < 0) return null;
         int colon = json.indexOf(':', idx);
+        if (colon < 0) return null;
         int firstQuote = json.indexOf('"', colon + 1);
-        int secondQuote = json.indexOf('"', firstQuote + 1);
-        if (colon < 0 || firstQuote < 0 || secondQuote < 0) return null;
-        return json.substring(firstQuote + 1, secondQuote);
+        if (firstQuote < 0) return null;
+        StringBuilder value = new StringBuilder();
+        boolean escaped = false;
+        for (int i = firstQuote + 1; i < json.length(); i++) {
+            char ch = json.charAt(i);
+            if (escaped) {
+                if (ch == 'n') value.append('\n');
+                else if (ch == 'r') value.append('\r');
+                else if (ch == 't') value.append('\t');
+                else value.append(ch);
+                escaped = false;
+                continue;
+            }
+            if (ch == '\\') {
+                escaped = true;
+                continue;
+            }
+            if (ch == '"') {
+                return value.toString();
+            }
+            value.append(ch);
+        }
+        return null;
     }
 
     /**

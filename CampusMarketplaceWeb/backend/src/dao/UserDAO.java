@@ -53,6 +53,28 @@ public class UserDAO {
         return null;
     }
 
+    /**
+     * Finds user by id.
+     *
+     * @param userId user id
+     * @return user or null
+     */
+    public User findById(int userId) {
+        String sql = "SELECT user_id,username,email,password_hash,avatar_url,created_at FROM users WHERE user_id=?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return null;
+    }
+
     private User map(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("user_id"));

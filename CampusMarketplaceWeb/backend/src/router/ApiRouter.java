@@ -7,6 +7,7 @@ import controller.CategoryController;
 import controller.OrderController;
 import controller.ProductController;
 import controller.ProductImageController;
+import controller.ProductCommentController;
 import controller.SearchController;
 import controller.FavoriteController;
 import dto.AddProductRequest;
@@ -14,10 +15,13 @@ import dto.LoginRequest;
 import dto.OrderRequest;
 import dto.OrderResponse;
 import dto.ProductDetailResponse;
+import dto.ProductCommentResponse;
 import dto.ProductResponse;
 import dto.ApiResponse;
 import dto.RegisterRequest;
 import exception.AppException;
+import exception.AuthException;
+import exception.NotFoundException;
 import filter.CorsFilter;
 import model.Category;
 import util.HttpUtil;
@@ -36,6 +40,7 @@ public class ApiRouter implements HttpHandler {
     private final AuthController authController = new AuthController();
     private final ProductController productController = new ProductController();
     private final ProductImageController productImageController = new ProductImageController();
+    private final ProductCommentController productCommentController = new ProductCommentController();
     private final CategoryController categoryController = new CategoryController();
     private final SearchController searchController = new SearchController();
     private final OrderController orderController = new OrderController();
@@ -80,6 +85,12 @@ public class ApiRouter implements HttpHandler {
             }
             if ("/api/products/my".equals(path)) {
                 handleMyProducts(exchange); return;
+            }
+            if (path.startsWith("/api/products/") && path.endsWith("/comments")) {
+                handleProductComments(exchange, path); return;
+            }
+            if (path.startsWith("/api/comments/")) {
+                handleCommentDelete(exchange, path); return;
             }
             if (path.startsWith("/api/products/")) {
                 handleProductDetail(exchange, path); return;
@@ -159,6 +170,52 @@ public class ApiRouter implements HttpHandler {
             "\",\"imageUrl\":" + imgPart + ",\"sellerId\":" + detail.getSellerId() + ",\"categoryId\":" + (detail.getCategoryId()==null?"null":detail.getCategoryId()) +
             ",\"description\":\"" + JsonUtil.escape(detail.getDescription()) + "\",\"searchHitCount\":" + detail.getSearchHitCount() + "}";
         ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(json));
+    }
+
+    private void handleProductComments(HttpExchange exchange, String path) throws IOException {
+        String idPart = path.substring("/api/products/".length(), path.length() - "/comments".length());
+        int productId = Integer.parseInt(idPart);
+        try {
+            if (HttpUtil.isMethod(exchange, "GET")) {
+                List<ProductCommentResponse> comments = productCommentController.listComments(productId);
+                ResponseUtil.sendJson(exchange, 200, JsonUtil.successData(toCommentsJson(comments)));
+                return;
+            }
+            if (HttpUtil.isMethod(exchange, "POST")) {
+                String body = RequestUtil.readBody(exchange);
+                int userId = defaultInt(RequestUtil.getJsonInt(body, "userId"), 0);
+                String content = RequestUtil.getJsonString(body, "content");
+                ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(productCommentController.addComment(productId, userId, content)));
+                return;
+            }
+            HttpUtil.methodNotAllowed(exchange);
+        } catch (NotFoundException e) {
+            ResponseUtil.sendJson(exchange, 404, JsonUtil.fail(e.getMessage()));
+        } catch (AppException e) {
+            ResponseUtil.sendJson(exchange, 400, JsonUtil.fail(e.getMessage()));
+        }
+    }
+
+    private void handleCommentDelete(HttpExchange exchange, String path) throws IOException {
+        if (!HttpUtil.isMethod(exchange, "DELETE")) { HttpUtil.methodNotAllowed(exchange); return; }
+        String idPart = path.substring("/api/comments/".length());
+        int commentId = Integer.parseInt(idPart);
+        Map<String, String> query = RequestUtil.parseQuery(exchange.getRequestURI().getQuery());
+        int userId;
+        try {
+            userId = Integer.parseInt(query.getOrDefault("userId", "0"));
+        } catch (NumberFormatException e) {
+            userId = 0;
+        }
+        try {
+            ResponseUtil.sendJson(exchange, 200, JsonUtil.toJson(productCommentController.deleteComment(commentId, userId)));
+        } catch (NotFoundException e) {
+            ResponseUtil.sendJson(exchange, 404, JsonUtil.fail(e.getMessage()));
+        } catch (AuthException e) {
+            ResponseUtil.sendJson(exchange, 403, JsonUtil.fail(e.getMessage()));
+        } catch (AppException e) {
+            ResponseUtil.sendJson(exchange, 400, JsonUtil.fail(e.getMessage()));
+        }
     }
 
     private void handleAddProduct(HttpExchange exchange) throws IOException {
@@ -277,6 +334,16 @@ public class ApiRouter implements HttpHandler {
                     .append(",\"imageUrl\":")
                     .append(p.getImageUrl() == null ? "null" : ("\"" + JsonUtil.escape(p.getImageUrl()) + "\""))
                     .append("}");
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    private String toCommentsJson(List<ProductCommentResponse> comments) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < comments.size(); i++) {
+            if (i > 0) sb.append(',');
+            sb.append(productCommentController.toCommentJson(comments.get(i)));
         }
         sb.append(']');
         return sb.toString();

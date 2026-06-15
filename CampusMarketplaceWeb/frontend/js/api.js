@@ -44,9 +44,14 @@ async function apiPost(path, payload) {
   }
 }
 
-async function apiDelete(path) {
+async function apiDelete(path, payload) {
   try {
-    const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
+    const options = { method: 'DELETE' };
+    if (payload !== undefined) {
+      options.headers = { 'Content-Type': 'application/json' };
+      options.body = JSON.stringify(payload);
+    }
+    const res = await fetch(`${API_BASE}${path}`, options);
     const data = await safeParseJson(res);
     if (!res.ok) {
       if (data && typeof data.message === 'string') return { success: false, message: data.message };

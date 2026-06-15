@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../css/reset.css">
   <link rel="stylesheet" href="../css/layout.css">
   <link rel="stylesheet" href="../css/components.css">
-  <link rel="stylesheet" href="../css/product.css">
+  <link rel="stylesheet" href="../css/product.css?v=20260615-4">
 </head>
 <body>
   <div class="page-shell">
@@ -46,6 +46,30 @@
             <a class="btn btn-secondary" href="home.html">回首頁</a>
           </div>
         </div>
+      </section>
+
+      <section class="comments-section" id="product-comments-section">
+        <div class="comments-header">
+          <div>
+            <h2>商品留言</h2>
+            <p>可以詢問商品狀況、面交方式或其他細節</p>
+          </div>
+          <span class="comments-count" id="comments-count">0 則留言</span>
+        </div>
+
+        <div class="comment-login-hint" id="comment-login-hint"></div>
+
+        <form class="comment-form" id="comment-form">
+          <label for="comment-input">留下留言</label>
+          <textarea id="comment-input" maxlength="500" rows="4" placeholder="例如：請問可以面交嗎？"></textarea>
+          <div class="comment-form-footer">
+            <span class="comment-char-count" id="comment-char-count">0 / 500</span>
+            <button type="submit" class="btn btn-primary" id="comment-submit-btn">送出留言</button>
+          </div>
+        </form>
+
+        <div class="comment-message" id="comment-message"></div>
+        <div class="comment-list" id="comment-list"></div>
       </section>
     </main>
   </div>
@@ -110,7 +134,7 @@
   <script src="../js/utils.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/navbar.js"></script>
-  <script src="../js/product.js"></script>
+  <script src="../js/product.js?v=20260615-4"></script>
   <script src="../js/favorite.js"></script>
   <script src="../js/order.js"></script>
 </body>

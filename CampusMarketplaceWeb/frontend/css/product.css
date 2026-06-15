@@ -243,6 +243,209 @@
   margin: 0 0 8px;
 }
 
+.comments-section {
+  margin-top: 32px;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.comments-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.comments-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.comments-count {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.comment-login-hint {
+  margin-bottom: 14px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.comment-form {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.comment-form label {
+  display: block;
+  margin-bottom: 10px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.comment-form textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 14px 16px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  line-height: 1.6;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comment-form textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.comment-form textarea:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.comment-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.comment-char-count {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.comment-char-count.is-warning {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.comment-message {
+  min-height: 20px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.comment-message.is-error {
+  color: #dc2626;
+}
+
+.comment-message.is-success {
+  color: #15803d;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-item {
+  display: flex;
+  gap: 14px;
+  padding: 20px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.comment-item:first-child {
+  border-top: none;
+}
+
+.comment-avatar {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  color: #ffffff;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.comment-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.comment-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.comment-time {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.comment-content {
+  margin: 0;
+  color: #334155;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-delete-btn {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.comment-delete-btn:hover {
+  text-decoration: underline;
+}
+
+.comment-empty {
+  padding: 32px 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  text-align: center;
+  background: #f8fafc;
+}
+
 @media (max-width: 680px) {
   .search-panel {
     grid-template-columns: 1fr;
@@ -254,6 +457,33 @@
   }
   .detail-layout { grid-template-columns: 1fr; }
   .product-card .product-image { height: 160px; }
+
+  .comments-section {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .comments-header {
+    flex-direction: column;
+  }
+
+  .comment-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .comment-form-footer .btn {
+    width: 100%;
+  }
+
+  .comment-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .comment-delete-btn {
+    align-self: flex-start;
+  }
 }
 
 @media (max-width: 600px) {

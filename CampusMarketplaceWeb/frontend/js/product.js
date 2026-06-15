@@ -39,6 +39,7 @@ let currentProducts = [];
 let selectedCategoryId = 'all';
 // currently viewed product on product-detail page
 window.currentProduct = window.currentProduct || null;
+window.currentProductCommentProductId = window.currentProductCommentProductId || null;
 // hot keywords will be stored on window.currentHotKeywords by the search module
 // but provide a default empty array accessor for safety
 window.currentHotKeywords = window.currentHotKeywords || [];
@@ -195,7 +196,7 @@ function renderFilteredAndSortedProducts() {
     return;
   }
 
-  const sortType = document.getElementById('product-sort')?.value || 'newest';
+  const sortType = document.getElementById('product-sort')?.value || 'latest';
   const sorted = getSortedProducts(filteredProducts, sortType);
   renderProductList(sorted);
 }
@@ -256,7 +257,23 @@ function getSortedProducts(products, sortType) {
     });
   }
 
-  // newest (default)
+  if (sortType === 'price-asc') {
+    return sortedProducts.sort((a, b) => {
+      const priceDiff = Number(a.price) - Number(b.price);
+      if (priceDiff !== 0) return priceDiff;
+      return Number(b.productId || b.id || 0) - Number(a.productId || a.id || 0);
+    });
+  }
+
+  if (sortType === 'price-desc') {
+    return sortedProducts.sort((a, b) => {
+      const priceDiff = Number(b.price) - Number(a.price);
+      if (priceDiff !== 0) return priceDiff;
+      return Number(b.productId || b.id || 0) - Number(a.productId || a.id || 0);
+    });
+  }
+
+  // latest (default)
   return sortedProducts.sort((a, b) => {
     const aDate = a.createdAt || a.created_at || a.createdTime || a.created_time;
     const bDate = b.createdAt || b.created_at || b.createdTime || b.created_time;
@@ -273,7 +290,7 @@ function updateProductResults(products) {
 }
 
 function renderSortedProducts() {
-  // keep compatibility: renderSortedProducts now applies current filter first
+  // Applies the current category filter, then sorts and re-renders the visible products.
   renderFilteredAndSortedProducts();
 }
 
@@ -347,6 +364,7 @@ async function loadProductDetail() {
   const p = result.data;
   // expose current product so other modules (order modal) can use it
   window.currentProduct = p;
+  window.currentProductCommentProductId = p.productId;
   detailArea.innerHTML = `
     <div class="detail-layout">
       <div class="detail-image" aria-hidden="true"></div>
@@ -390,6 +408,211 @@ async function loadProductDetail() {
     orderBtn.textContent = '無法下單';
     orderBtn.classList.add('btn-secondary');
   }
+
+  updateCommentLoginState();
+  loadProductComments(p.productId);
+}
+
+function setCommentMessage(message, isError) {
+  const messageEl = document.getElementById('comment-message');
+  if (!messageEl) return;
+  messageEl.textContent = message || '';
+  messageEl.className = 'comment-message';
+  if (message) {
+    messageEl.classList.add(isError ? 'is-error' : 'is-success');
+  }
+}
+
+function updateCommentCharCount() {
+  const input = document.getElementById('comment-input');
+  const count = document.getElementById('comment-char-count');
+  if (!input || !count) return;
+  const length = input.value.length;
+  count.textContent = `${length} / 500`;
+  count.classList.toggle('is-warning', length > 450);
+}
+
+function updateCommentLoginState() {
+  const userId = localStorage.getItem('userId');
+  const username = localStorage.getItem('username');
+  const isLoggedIn = Boolean(userId);
+  const hint = document.getElementById('comment-login-hint');
+  const input = document.getElementById('comment-input');
+  const submit = document.getElementById('comment-submit-btn');
+  if (hint) {
+    hint.textContent = isLoggedIn ? `以 ${username || '使用者'} 身分留言` : '請先登入後再留言';
+  }
+  if (input) input.disabled = !isLoggedIn;
+  if (submit) submit.disabled = !isLoggedIn;
+}
+
+async function loadProductComments(productId) {
+  const list = document.getElementById('comment-list');
+  const count = document.getElementById('comments-count');
+  if (!list || !productId) return;
+  list.textContent = '';
+  const loading = document.createElement('div');
+  loading.className = 'comment-empty';
+  loading.textContent = '留言載入中...';
+  list.appendChild(loading);
+  const result = await apiGet(`/products/${encodeURIComponent(productId)}/comments`);
+  list.textContent = '';
+  if (!result.success) {
+    if (count) count.textContent = '0 則留言';
+    const error = document.createElement('div');
+    error.className = 'comment-empty';
+    error.textContent = result.message || '留言載入失敗。';
+    list.appendChild(error);
+    return;
+  }
+  const comments = Array.isArray(result.data) ? result.data : [];
+  if (count) count.textContent = `${comments.length} 則留言`;
+  if (comments.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'comment-empty';
+    empty.textContent = '目前還沒有留言，成為第一個留言的人吧！';
+    list.appendChild(empty);
+    return;
+  }
+  comments.forEach((comment) => {
+    list.appendChild(createCommentElement(comment));
+  });
+}
+
+function createCommentElement(comment) {
+  const item = document.createElement('article');
+  item.className = 'comment-item';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'comment-avatar';
+  const username = comment.username || 'U';
+  avatar.textContent = username.trim().charAt(0) || 'U';
+
+  const main = document.createElement('div');
+  main.className = 'comment-main';
+
+  const meta = document.createElement('div');
+  meta.className = 'comment-meta';
+
+  const authorBlock = document.createElement('div');
+  const author = document.createElement('strong');
+  author.className = 'comment-author';
+  author.textContent = username;
+  const time = document.createElement('span');
+  time.className = 'comment-time';
+  time.textContent = formatCommentTime(comment.createdAt);
+  authorBlock.appendChild(author);
+  authorBlock.appendChild(time);
+  meta.appendChild(authorBlock);
+
+  const currentUserId = Number(localStorage.getItem('userId'));
+  if (currentUserId && currentUserId === Number(comment.userId)) {
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'comment-delete-btn';
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = '刪除';
+    deleteBtn.addEventListener('click', () => deleteProductComment(comment.commentId, currentUserId));
+    meta.appendChild(deleteBtn);
+  }
+
+  const content = document.createElement('p');
+  content.className = 'comment-content';
+  content.textContent = comment.content || '';
+
+  main.appendChild(meta);
+  main.appendChild(content);
+  item.appendChild(avatar);
+  item.appendChild(main);
+  return item;
+}
+
+function formatCommentTime(value) {
+  if (!value) return '';
+  const text = String(value);
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (match) {
+    return `${match[1]}/${match[2]}/${match[3]} ${match[4]}:${match[5]}`;
+  }
+  const date = new Date(text);
+  if (Number.isNaN(date.getTime())) return text;
+  return date.toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+async function submitProductComment(productId) {
+  const userId = Number(localStorage.getItem('userId'));
+  const input = document.getElementById('comment-input');
+  const submit = document.getElementById('comment-submit-btn');
+  if (!userId) {
+    setCommentMessage('請先登入後再留言', true);
+    return;
+  }
+  if (!input) return;
+  const content = input.value.trim();
+  if (!content) {
+    setCommentMessage('留言內容不可為空。', true);
+    return;
+  }
+  if (content.length > 500) {
+    setCommentMessage('留言內容不可超過 500 字。', true);
+    return;
+  }
+  const originalText = submit?.textContent || '送出留言';
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = '送出中...';
+  }
+  const result = await apiPost(`/products/${encodeURIComponent(productId)}/comments`, {
+    userId,
+    content
+  });
+  if (result.success) {
+    input.value = '';
+    updateCommentCharCount();
+    setCommentMessage('留言已送出。', false);
+    await loadProductComments(productId);
+  } else {
+    setCommentMessage(result.message || '留言送出失敗。', true);
+  }
+  updateCommentLoginState();
+  if (submit) {
+    submit.disabled = !localStorage.getItem('userId');
+    submit.textContent = originalText;
+  }
+}
+
+async function deleteProductComment(commentId, userId) {
+  if (!confirm('確定要刪除這則留言嗎？')) return;
+  const result = await apiDelete(`/comments/${encodeURIComponent(commentId)}?userId=${encodeURIComponent(userId)}`);
+  if (result.success) {
+    setCommentMessage('留言已刪除。', false);
+    if (window.currentProductCommentProductId) {
+      await loadProductComments(window.currentProductCommentProductId);
+    }
+  } else {
+    setCommentMessage(result.message || '刪除留言失敗。', true);
+  }
+}
+
+function bindProductCommentForm() {
+  const form = document.getElementById('comment-form');
+  const input = document.getElementById('comment-input');
+  if (!form || form.dataset.bound === 'true') return;
+  form.dataset.bound = 'true';
+  input?.addEventListener('input', updateCommentCharCount);
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (window.currentProductCommentProductId) {
+      submitProductComment(window.currentProductCommentProductId);
+    }
+  });
+  updateCommentLoginState();
+  updateCommentCharCount();
 }
 
 // --- Order confirmation modal functions ---
@@ -607,7 +830,7 @@ async function handleAddProduct(event) {
     document.getElementById('reloadBtn')?.addEventListener('click', loadActiveProducts);
     const sortSelect = document.getElementById('product-sort');
     sortSelect?.addEventListener('change', () => {
-      renderFilteredAndSortedProducts();
+      renderSortedProducts();
     });
     // populate category filter on home page and bind change
     populateCategoryFilter();
@@ -618,6 +841,7 @@ async function handleAddProduct(event) {
     });
   }
   if (document.getElementById('productDetail')) {
+    bindProductCommentForm();
     loadProductDetail();
   }
   if (document.getElementById('categoryId')) {
